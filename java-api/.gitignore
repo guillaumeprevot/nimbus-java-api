@@ -1,0 +1,4 @@
+/bin/*
+/lib/*.jar
+/target/
+/pom.tree.txt

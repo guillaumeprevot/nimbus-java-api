@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/freemarker-2.3.30.jar"/>
+	<classpathentry kind="lib" path="lib/gson-2.8.6.jar"/>
+	<classpathentry kind="lib" path="lib/javax.servlet-api-3.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-client-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-http-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-io-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-security-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-server-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-servlet-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-webapp-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-xml-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/websocket-api-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/websocket-client-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/websocket-common-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/websocket-server-9.4.29.v20200521.jar"/>
+	<classpathentry kind="lib" path="lib/websocket-servlet-9.4.29.v20200521.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
