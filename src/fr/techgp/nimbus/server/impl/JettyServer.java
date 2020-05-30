@@ -75,7 +75,7 @@ public class JettyServer {
 		@Override
 		public void doHandle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 				throws IOException, ServletException {
-			ServletRequest req = new JettyServletRequest(request, false, this.multipart);
+			ServletRequest req = new JettyServletRequest(request, this.multipart);
 			ServletResponse res = new ServletResponse(response);
 			this.router.process(req, res);
 			try {
@@ -101,8 +101,8 @@ public class JettyServer {
 
 		private final MultipartConfigElement multipart;
 
-		public JettyServletRequest(HttpServletRequest request, boolean checkProxy, MultipartConfigElement multipart) {
-			super(request, checkProxy);
+		public JettyServletRequest(HttpServletRequest request, MultipartConfigElement multipart) {
+			super(request);
 			this.multipart = multipart;
 		}
 

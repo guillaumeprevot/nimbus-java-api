@@ -24,8 +24,6 @@ public class ServletRequest implements Request {
 	private final HttpServletRequest request;
 	/** The parameters, extracted from path when ":" is found, during route selection */
 	private final Map<String, String> params = new HashMap<>();
-	/** Should "Method", "IP" and "Host" look into proxy modification in headers */
-	private final boolean checkProxy;
 	/** The cookie collections */
 	private List<ServletCookie> cookies;
 	/** The upload collections */
@@ -33,9 +31,8 @@ public class ServletRequest implements Request {
 	/** The session wrapper */
 	private ServletSession session;
 
-	public ServletRequest(HttpServletRequest request, boolean checkProxy) {
+	public ServletRequest(HttpServletRequest request) {
 		this.request = request;
-		this.checkProxy = checkProxy;
 	}
 
 	public HttpServletRequest raw() {
@@ -44,7 +41,7 @@ public class ServletRequest implements Request {
 
 	@Override
 	public String method() {
-		return getMethod(this.request, this.checkProxy);
+		return this.request.getMethod();
 	}
 
 	@Override
@@ -61,7 +58,7 @@ public class ServletRequest implements Request {
 	}
 
 	public String host() {
-		return getHost(this.request, this.checkProxy);
+		return this.request.getHeader("Host");
 	}
 
 	public int port() {
@@ -138,7 +135,7 @@ public class ServletRequest implements Request {
 
 	@Override
 	public String ip() {
-		return getIP(this.request, this.checkProxy);
+		return this.request.getRemoteAddr();
 	}
 
 	public String userAgent() {
@@ -239,42 +236,6 @@ public class ServletRequest implements Request {
 
 	protected void invalidateSession() {
 		this.session = null;
-	}
-
-	private static final String getMethod(HttpServletRequest request, boolean checkProxy) {
-		if (checkProxy) {
-			String r = request.getHeader("X-HTTP-Method");
-			if (r != null)
-				return r;
-			r = request.getHeader("X-HTTP-Method-Override");
-			if (r != null)
-				return r;
-			r = request.getHeader("X-METHOD-OVERRIDE");
-			if (r != null)
-				return r;
-		}
-		return request.getMethod();
-	}
-
-	private static final String getIP(HttpServletRequest request, boolean checkProxy) {
-		if (checkProxy) {
-			String r = request.getHeader("X-Real-IP");
-			if (r != null)
-				return r;
-			r = request.getHeader("X-Forwarded-For");
-			if (r != null)
-				return r.split(",")[0].trim();
-		}
-		return request.getRemoteAddr();
-	}
-
-	private static final String getHost(HttpServletRequest request, boolean checkProxy) {
-		if (checkProxy) {
-			String r = request.getHeader("X-Forwarded-Host");
-			if (r != null)
-				return r.split(",")[0].trim();
-		}
-		return request.getHeader("Host");
 	}
 
 }

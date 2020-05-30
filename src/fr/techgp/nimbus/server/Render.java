@@ -2,7 +2,6 @@ package fr.techgp.nimbus.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -27,17 +26,6 @@ import fr.techgp.nimbus.server.render.RenderThrowable;
 public interface Render {
 
 	public void render(Request request, Response response, Charset charset, Supplier<OutputStream> stream) throws IOException;
-
-	/**
-	 * An utility function that {@link Render} implementations can use to write response's body
-	 */
-	default void copy(InputStream is, OutputStream os) throws IOException {
-		int n;
-		byte[] buffer = new byte[1024 * 1024];
-		while ((n = is.read(buffer)) != -1) {
-			os.write(buffer, 0, n);
-		}
-	}
 
 	/**
 	 * A singleton for an empty body {@link Render}
