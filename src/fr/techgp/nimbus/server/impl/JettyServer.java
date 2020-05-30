@@ -29,21 +29,53 @@ import fr.techgp.nimbus.server.Router;
 // https://www.eclipse.org/jetty/documentation/current/embedding-jetty.html
 public class JettyServer {
 
+	private int port;
+	private String keystoreFile;
+	private String keystorePassword;
+	private MultipartConfigElement multipart = null;
+	private Server server;
+
+	public JettyServer(int port) {
+		this.port = port;
+	}
+
+	public JettyServer https(String keystoreFile, String keystorePassword) {
+		this.keystoreFile = keystoreFile;
+		this.keystorePassword = keystorePassword;
+		return this;
+	}
+
+	public JettyServer multipart(String uploadFolder, long maxFileSize, long maxRequestSize, int fileSizeThreshold) {
+		this.multipart = new MultipartConfigElement(uploadFolder, maxFileSize, maxRequestSize, fileSizeThreshold);
+		return this;
+	}
+
+	public JettyServer start(Router router) throws Exception {
+		this.server = init(router, this.port, this.keystoreFile, this.keystorePassword, this.multipart);
+		return this;
+	}
+
+	public JettyServer stop() throws Exception {
+		this.server.stop();
+		this.server = null;
+		return this;
+	}
+
 	/** This {@link Handler} uses a {@link Router} to handle incomming request and associated answers. */
 	public static final class JettyRouterHandler extends SessionHandler {
 
 		private final Router router;
-		private final String uploadFolder;
+		private final MultipartConfigElement multipart;
 
-		public JettyRouterHandler(Router router, String uploadFolder) {
+		public JettyRouterHandler(Router router, MultipartConfigElement multipart) {
 			this.router = router;
-			this.uploadFolder = uploadFolder;
+			this.multipart = multipart;
 		}
 
 		@Override
 		public void doHandle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 				throws IOException, ServletException {
-			ServletRequest req = new JettyServletRequest(request, false, this.uploadFolder);
+			ServletRequest req = new JettyServletRequest(request, false, this.multipart);
 			ServletResponse res = new ServletResponse(response);
 			this.router.process(req, res);
 			try {
@@ -67,17 +99,17 @@ public class JettyServer {
 	/** This {@link ServletRequest} optimizes uploads by overriding {@link ServletRequest#loadUploads} */
 	public static class JettyServletRequest extends ServletRequest {
 
-		private final String uploadFolder;
+		private final MultipartConfigElement multipart;
 
-		public JettyServletRequest(HttpServletRequest request, boolean checkProxy, String uploadFolder) {
+		public JettyServletRequest(HttpServletRequest request, boolean checkProxy, MultipartConfigElement multipart) {
 			super(request, checkProxy);
-			this.uploadFolder = uploadFolder;
+			this.multipart = multipart;
 		}
 
 		@Override
 		protected List<ServletUpload> loadUploads() {
 			try {
-				prepareUploadRequest(this, this.uploadFolder);
+				this.attribute("org.eclipse.jetty.multipartConfig", this.multipart);
 				Collection<Part> parts = this.raw().getParts();
 				List<ServletUpload> uploads = new ArrayList<>();
 				for (Part part : parts) {
@@ -94,7 +126,7 @@ public class JettyServer {
 	}
 
 	@SuppressWarnings("resource")
-	public static final Server init(Router router, int port, String keystore, String keystorePassword, String uploadFolder) throws Exception {
+	protected static final Server init(Router router, int port, String keystore, String keystorePassword, MultipartConfigElement multipart) throws Exception {
 		// Create server
 		Server server = new Server();
 
@@ -107,7 +139,7 @@ public class JettyServer {
 		server.setConnectors(new Connector[] { connector });
 
 		// Add handler
-		JettyRouterHandler handler = new JettyRouterHandler(router, uploadFolder);
+		JettyRouterHandler handler = new JettyRouterHandler(router, multipart);
 		handler.getSessionCookieConfig().setHttpOnly(true);
 		server.setHandler(handler);
 
@@ -115,14 +147,6 @@ public class JettyServer {
 		server.start();
 		// server.join();
 		return server;
-	}
-
-	/** This method configures the request's attribute called "org.eclipse.jetty.multipartConfig" to control upload behaviour */
-	protected static final void prepareUploadRequest(ServletRequest request, String uploadFolder) {
-		long maxFileSize = -1L; // peu importe
-		long maxRequestSize = -1L; // on vérifie plus loin le quota
-		int fileSizeThreshold = 100 * 1024 * 1024; // en mémoire jusqu'à 100 Mo
-		request.attribute("org.eclipse.jetty.multipartConfig", new MultipartConfigElement(uploadFolder, maxFileSize, maxRequestSize, fileSizeThreshold));
 	}
 
 	/** This method creates an HTTPS connector if a keystore is specified, or an HTTP connector otherwise. */

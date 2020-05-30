@@ -11,13 +11,13 @@ Router router = new Router()
 	.get("/ping",        (req, res) -> Render.string("pong"))
 	.get("/hello/:name", (req, res) -> Render.string("Hello " + req.pathParameter(":name") + "!"));
 
-Server server = JettyServer.init(router,
-	8443,
-	"/path/to/keystore/file",
-	"KeystorePassword",
-	"/path/to/upload/temp/folder");
+JettyServer server = new JettyServer(8443)
+	.https("/path/to/keystore/file", "KeystorePassword")
+	.multipart("/path/to/upload/temp/folder", ...)
+	.start(router);
 
-server.join();
+// ...
+server.stop();
 ```
 
 It should look familiar to those who knows [Spark](http://sparkjava.com/), [WebMotion](https://github.com/webmotion-framework/webmotion) or [Express.js](https://expressjs.com/).
