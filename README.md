@@ -2,6 +2,8 @@
 
 This project contains some reusable libraries originally build for one of my projects called `Nimbus`.
 
+Any feedback would be great !
+
 ## Routing API
 
 Here is an example of the routing library available in this project.
@@ -26,6 +28,16 @@ It should look familiar to those who know [Spark](http://sparkjava.com/), [WebMo
 
 This [application](./src/fr/techgp/nimbus/server/impl/WebServerApplication.java) is a simple web server built using the routing API.
 
+Get started with the following instructions :
+
+```bash
+git clone https://github.com/guillaumeprevot/nimbus-java-api.git
+cd nimbus-java-api
+mvn compile
+cd webserver
+java -cp ../bin:../lib/* fr.techgp.nimbus.server.impl.WebServerApplication
+```
+
 The default behaviour is this :
 
 - run on port `10001` in HTTP and share the `public` folder as root (and only) folder
@@ -40,7 +52,7 @@ The default behaviour is this :
     - use `-Dwebserver.pid=another-file.pid` to change it's location
     - this should make termination easier, like ``kill -9 `cat webserver.pid` ``
 
-The configuration can be easily customized. For instance, to share 2 folders with HTTPS enabled, you could use this configuration :
+You can easily customize your server. For instance, to share 2 folders with HTTPS enabled, you could use this configuration :
 
 ```properties
 server.port=10001
@@ -52,14 +64,9 @@ static.1.folder=/path/to/folder2
 static.1.prefix=/public2
 ```
 
-If you want to give it a try, go for it !
+## CHANGELOG
 
-```bash
-git clone https://github.com/guillaumeprevot/nimbus-java-api.git
-cd nimbus-java-api
-mvn compile
-cd webserver
-java -cp ../bin:../lib/* fr.techgp.nimbus.server.impl.WebServerApplication
-```
-
-If you want to share any thoughts about it, feel free to do so !
+- 2020-05-17 : initial release
+- 2020-05-27 : add new routing API
+- 2020-05-30 : add new web server application
+- 2020-05-31 : add reusable MIME type manager

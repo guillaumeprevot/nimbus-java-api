@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletResponse;
 
+import fr.techgp.nimbus.server.MimeTypes;
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Request;
 import fr.techgp.nimbus.server.Response;
@@ -28,7 +29,7 @@ public class RenderThrowable implements Render {
 	public void render(Request request, Response response, Charset charset, Supplier<OutputStream> stream)
 			throws IOException {
 		response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-		response.type("text/plain");
+		response.type(MimeTypes.TEXT);
 		try (PrintWriter w = new PrintWriter(stream.get(), true, charset)) {
 			this.throwable.printStackTrace(w);
 		}

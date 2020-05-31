@@ -23,6 +23,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
+import fr.techgp.nimbus.server.MimeTypes;
 import fr.techgp.nimbus.server.Router;
 
 // https://www.eclipse.org/jetty/documentation/current/
@@ -182,6 +183,11 @@ public class JettyServer {
 			return true;
 		}
 		return false;
+	}
+
+	/** This public method uses Jetty to extend MIME type detection */
+	public static final void registerToMimeTypes() {
+		MimeTypes.register((extension) -> org.eclipse.jetty.http.MimeTypes.getDefaultMimeByExtension("file." + extension));
 	}
 
 }

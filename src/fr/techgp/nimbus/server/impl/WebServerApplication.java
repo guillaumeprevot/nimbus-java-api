@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.eclipse.jetty.http.MimeTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -28,6 +27,7 @@ import org.w3c.dom.NodeList;
 
 import com.google.gson.JsonObject;
 
+import fr.techgp.nimbus.server.MimeTypes;
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Request;
 import fr.techgp.nimbus.server.Response;
@@ -78,6 +78,10 @@ public class WebServerApplication {
 				String s = System.getProperty(name);
 				return (s != null) ? s : properties.getProperty(name, defaultValue);
 			};
+
+			// Load MIME type detection
+			MimeTypes.loadDefaultMimeTypes();
+			JettyServer.registerToMimeTypes();
 
 			// Port
 			int port = Integer.parseInt(settings.apply("server.port", "10001"));
@@ -156,7 +160,7 @@ public class WebServerApplication {
 			// File extension
 			String extension = request.pathParameter(":extension");
 			// Associated MIME type
-			String mimetype = MimeTypes.getDefaultMimeByExtension("file." + extension);
+			String mimetype = MimeTypes.byExtension(extension);
 			if (mimetype == null)
 				return Render.notFound();
 			return Render.string(mimetype);
@@ -302,7 +306,7 @@ public class WebServerApplication {
 					return null;
 
 				// Renvoyer le fichier avec le bon type MIME et en fonction du cache
-				String mimetype = MimeTypes.getDefaultMimeByExtension(path);
+				String mimetype = MimeTypes.byResourcePath(path);
 				return Render.staticFile(file, mimetype);
 
 			} catch (Exception ex) {

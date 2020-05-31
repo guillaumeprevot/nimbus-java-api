@@ -55,12 +55,11 @@ public interface Matcher {
 	 */
 	public static class Type {
 
-		public static final Matcher TEXT = is("text/plain");
-		public static final Matcher HTML = is("text/html");
-		public static final Matcher CSS = is("text/css");
-		public static final Matcher JS = is("application/javascript");
-		public static final Matcher JSON = is("application/json");
-		public static final Matcher XML = is("application/xml");
+		public static final Matcher TEXT = is(MimeTypes.TEXT);
+		public static final Matcher HTML = is(MimeTypes.HTML);
+		public static final Matcher CSS = is(MimeTypes.CSS);
+		public static final Matcher JS = is(MimeTypes.JS);
+		public static final Matcher JSON = is(MimeTypes.JSON);
 
 		public static Matcher is(String type) {
 			return (req) -> type.equals(req.acceptType());

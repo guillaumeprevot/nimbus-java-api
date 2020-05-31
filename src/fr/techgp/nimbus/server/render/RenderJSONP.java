@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
+import fr.techgp.nimbus.server.MimeTypes;
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Request;
 import fr.techgp.nimbus.server.Response;
@@ -47,7 +48,7 @@ public class RenderJSONP implements Render {
 		JsonElement e = this.content.get();
 		String js = this.callback + '(' + e.toString() + ')';
 		byte[] bytes = js.getBytes(charset);
-		response.type("application/javascript");
+		response.type(MimeTypes.JS);
 		response.length(bytes.length);
 		try (OutputStream os = stream.get()) {
 			os.write(bytes);

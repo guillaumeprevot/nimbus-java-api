@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
+import fr.techgp.nimbus.server.MimeTypes;
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Request;
 import fr.techgp.nimbus.server.Response;
@@ -40,7 +41,7 @@ public class RenderJSON implements Render {
 	public void render(Request request, Response response, Charset charset, Supplier<OutputStream> stream) throws IOException {
 		JsonElement e = this.content.get();
 		byte[] bytes = e.toString().getBytes(charset);
-		response.type("application/json");
+		response.type(MimeTypes.JSON);
 		response.length(bytes.length);
 		try (OutputStream os = stream.get()) {
 			os.write(bytes);
