@@ -26,8 +26,14 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import fr.techgp.nimbus.server.MimeTypes;
 import fr.techgp.nimbus.server.Router;
 
-// https://www.eclipse.org/jetty/documentation/current/
-// https://www.eclipse.org/jetty/documentation/current/embedding-jetty.html
+/**
+ * This class is an embedded Jetty server with the ability to use a {@link Router} a it's main {@link Handler}
+ *
+ * @see Server
+ * @see Handler
+ * @see https://www.eclipse.org/jetty/documentation/current/
+ * @see https://www.eclipse.org/jetty/documentation/current/embedding-jetty.html
+ */
 public class JettyServer {
 
 	private int port;
@@ -36,33 +42,38 @@ public class JettyServer {
 	private MultipartConfigElement multipart = null;
 	private Server server;
 
+	/** creates a Jetty server wrapper that will use the specified port when started */
 	public JettyServer(int port) {
 		this.port = port;
 	}
 
+	/** turns HTTPS on by specifying a keystore file and password */
 	public JettyServer https(String keystoreFile, String keystorePassword) {
 		this.keystoreFile = keystoreFile;
 		this.keystorePassword = keystorePassword;
 		return this;
 	}
 
+	/** then configures the "multipart/form-data" request body parsing */
 	public JettyServer multipart(String uploadFolder, long maxFileSize, long maxRequestSize, int fileSizeThreshold) {
 		this.multipart = new MultipartConfigElement(uploadFolder, maxFileSize, maxRequestSize, fileSizeThreshold);
 		return this;
 	}
 
+	/** starts the Jetty server using with a special {@link Handler} that will use the {@link Router} to handle requests */
 	public JettyServer start(Router router) throws Exception {
-		this.server = init(router, this.port, this.keystoreFile, this.keystorePassword, this.multipart);
+		this.server = createAndStartServer(router, this.port, this.keystoreFile, this.keystorePassword, this.multipart);
 		return this;
 	}
 
+	/** stops the Jetty server */
 	public JettyServer stop() throws Exception {
 		this.server.stop();
 		this.server = null;
 		return this;
 	}
 
-	/** This {@link Handler} uses a {@link Router} to handle incomming request and associated answers. */
+	/** This {@link Handler} uses a {@link Router} to handle incoming request and associated answers. */
 	public static final class JettyRouterHandler extends SessionHandler {
 
 		private final Router router;
@@ -126,8 +137,9 @@ public class JettyServer {
 
 	}
 
+	/** Thie method creates a Jetty {@link Server} using specified handler and port and optional keystore */
 	@SuppressWarnings("resource")
-	protected static final Server init(Router router, int port, String keystore, String keystorePassword, MultipartConfigElement multipart) throws Exception {
+	protected static final Server createAndStartServer(Router router, int port, String keystore, String keystorePassword, MultipartConfigElement multipart) throws Exception {
 		// Create server
 		Server server = new Server();
 
@@ -185,7 +197,7 @@ public class JettyServer {
 		return false;
 	}
 
-	/** This public method uses Jetty to extend MIME type detection */
+	/** This static method can extend {@link MimeTypes} to include Jetty in MIME type detection */
 	public static final void registerToMimeTypes() {
 		MimeTypes.register((extension) -> org.eclipse.jetty.http.MimeTypes.getDefaultMimeByExtension("file." + extension));
 	}

@@ -10,9 +10,7 @@ public final class Utils {
 		//
 	}
 
-	/**
-	 * An utility function that writes an {@link InputStream} to an {@link OutputStream} using a 1MB buffer.
-	 */
+	/** writes an {@link InputStream} to an {@link OutputStream} using a 1MB buffer */
 	public static void copy(InputStream is, OutputStream os) throws IOException {
 		int n;
 		byte[] buffer = new byte[1024 * 1024];
@@ -21,7 +19,7 @@ public final class Utils {
 		}
 	}
 
-	/** Get HTTP method for this request (and checks potential proxy headers) */
+	/** gets the HTTP method for this {@link Request}, checking for potential proxy headers */
 	public static final String extractMethodWithProxy(Request request) {
 		String r = request.header("X-HTTP-Method");
 		if (r != null)
@@ -35,7 +33,7 @@ public final class Utils {
 		return request.method();
 	}
 
-	/** Get the client address for this request (and checks potential proxy headers) */
+	/** gets the client address for this {@link Request}, checking for potential proxy headers */
 	public static final String extractIPWithProxy(Request request) {
 		String r = request.header("X-Real-IP");
 		if (r != null)
@@ -46,7 +44,7 @@ public final class Utils {
 		return request.ip();
 	}
 
-	/** Get the host name used by client for this request (and checks potential proxy headers) */
+	/** gets the host name used by client for this {@link Request}, checking for potential proxy headers */
 	public static final String extractHostWithProxy(Request request) {
 		String r = request.header("X-Forwarded-Host");
 		if (r != null)

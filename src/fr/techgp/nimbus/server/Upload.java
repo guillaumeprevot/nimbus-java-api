@@ -6,28 +6,28 @@ import java.io.InputStream;
 
 public interface Upload {
 
-	/** The input's name in the HTML form */
+	/** returns the input's name in the HTML form */
 	public String name();
 
-	/** The file's name, as it was on the client side */
+	/** return the file's name, as it was on the client side */
 	public String fileName();
 
-	/** The MIME type of the file content */
+	/** returns the content type of this part */
 	public String contentType();
 
-	/** The file's size in bytes */
+	/** returns the content size of this part, in bytes */
 	public long contentLength();
 
-	/** Either get the content as a file */
-	public File getFile();
-
-	/** Or get the content as an in-memory byte array */
-	public byte[] getBytes();
-
-	/** Or get the content as an InputStream */
+	/** gets the content of this part as an InputStream */
 	public InputStream getInputStream() throws IOException;
 
-	/** To clean-up resources, if any */
+	/** or gets the content as a file, if the content has been dumped to a file during request extraction */
+	public File getFile();
+
+	/** or gets the content as a byte array, if the content was small enough to be loaded in memory */
+	public byte[] getBytes();
+
+	/** deletes the underlying storage for a file item, including deleting any associated temporary disk file */
 	public void delete() throws IOException;
 
 }

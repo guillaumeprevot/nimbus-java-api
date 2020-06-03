@@ -12,8 +12,7 @@ import java.util.Properties;
 import java.util.function.Function;
 
 /**
- * Gestion personnalisée des types MIME par extension.
- * Customized MIME type managment depending on file's extensions.
+ * This is a class to provide extensible and reusable MIME type management based on file extensions.
  *
  * @see https://developer.mozilla.org/fr/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types
  * @see https://svn.apache.org/repos/asf/tomcat/tc9.0.x/branches/gsoc-jaspic/conf/web.xml
@@ -34,7 +33,7 @@ public final class MimeTypes {
 	public static final String JSON = "application/json";
 	public static final String BINARY = "application/octet-stream";
 
-	/** Charge les types MIME depuis la ressource par défaut <i>/fr/techgp/nimbus/server/mimetypes.conf</i> */
+	/** loads some file extension MIME types from default resource <i>/fr/techgp/nimbus/server/mimetypes.conf</i> */
 	public static final void loadDefaultMimeTypes() throws IOException {
 		synchronized (mimetypes) {
 			try (InputStream is = Utils.class.getResourceAsStream("mimetypes.properties")) {
@@ -51,26 +50,26 @@ public final class MimeTypes {
 		}
 	}
 
-	/** Enregistre une type MIME à retourner par défaut (null au départ mais "application/octet-stream" est courant) */
+	/** sets the default MIME type when no type is found (defaults to null but "application/octet-stream" is common) */
 	public static final void registerDefault(String mimetype) {
 		defaultMimeType = mimetype;
 	}
 
-	/** Enregistre une méthode externe à prendre en compte pour la résolution des types MIME à partir d'une extension */
+	/** registers a custom "extension to MIME type" function, for instance to include an external library */
 	public static final void register(Function<String, String> resolver) {
 		synchronized (resolvers) {
 			resolvers.add(resolver);
 		}
 	}
 
-	/** Enregistre un type MIME pour une extension, par exemple <code>register("text/css", "css")</code> */
+	/** registers a MIME type for the specified extension, for instance <code>register("text/css", "css")</code> */
 	public static final void register(String mimetype, String extension) {
 		synchronized (mimetypes) {
 			mimetypes.put(extension, mimetype);
 		}
 	}
 
-	/** Enregistre un même type MIME pour plusieurs extensions, par exemple <code>register("text/html", "html", "html")</code> */
+	/** registers a MIME type for severals extensions, for instance <code>register("text/html", "html", "html")</code> */
 	public static final void register(String mimetype, String extension, String... others) {
 		synchronized (mimetypes) {
 			mimetypes.put(extension, mimetype);
@@ -80,17 +79,17 @@ public final class MimeTypes {
 		}
 	}
 
-	/** Cherche le type MIME du fichier indiqué, par exemple <code>MimeTypes.byFilePath("c:\\path\\to\\file.html")</code> */
+	/** returns the MIME type of the specified file, for instance <code>MimeTypes.byFilePath("c:\\path\\to\\file.html")</code> */
 	public static final String byFilePath(String path) {
 		return byPath(path, File.separatorChar);
 	}
 
-	/** Cherche le type MIME de ressource indiquée, par exemple <code>MimeTypes.byResourcePath("/path/to/file.html")</code> */
+	/** returns the MIME type of the specified resource, for instance <code>MimeTypes.byResourcePath("/path/to/file.html")</code> */
 	public static final String byResourcePath(String path) {
 		return byPath(path, '/');
 	}
 
-	/** Cherche le type MIME du chemin indiqué, par exemple <code>MimeTypes.byPath("/path/to/file.html", '/')</code> */
+	/** returns the MIME type of the "separator"-delimited path, for instance <code>MimeTypes.byPath("/path/to/file.html", '/')</code> */
 	public static final String byPath(String path, char separator) {
 		if (path == null || path.isBlank())
 			throw new InvalidParameterException("path is required");
@@ -98,7 +97,7 @@ public final class MimeTypes {
 		return byName(path.substring(i + 1));
 	}
 
-	/** Cherche le type MIME du fichier indiqué, par exemple <code>MimeTypes.byName("file.html")</code> */
+	/** returns the MIME type of the specified file or resource name, for instance <code>MimeTypes.byName("file.html")</code> */
 	public static final String byName(String name) {
 		if (name == null || name.isBlank())
 			throw new InvalidParameterException("name is required");
@@ -106,7 +105,7 @@ public final class MimeTypes {
 		return byExtension(name.substring(i + 1));
 	}
 
-	/** Cherche le type MIME de l'extension indiquée, par exemple <code>MimeTypes.byExtension("html")</code> */
+	/** returns the MIME type of the specified extension, for instance <code>MimeTypes.byExtension("html")</code> */
 	public static final String byExtension(String extension) {
 		if (extension == null || extension.isBlank())
 			throw new InvalidParameterException("extension is required");
@@ -122,7 +121,7 @@ public final class MimeTypes {
 		return r == null ? defaultMimeType : r;
 	}
 
-	/** Cherche le type MIME d'une valeur de Content-Type, par exemple <code>MimeTypes.byContentType("text/html; charset=utf-8")</code> */
+	/** returns the MIME type of the specified "Content-Type", for instance <code>MimeTypes.byContentType("text/html; charset=utf-8")</code> */
 	public static final String byContentType(String type) {
 		if (type == null || type.isBlank())
 			throw new InvalidParameterException("type is required");

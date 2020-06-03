@@ -5,89 +5,109 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * This interface represents the incoming request.
+ *
+ * Let's say http://localhost:8080/webapp/servlet/item/info/2,param1=value1&param2=21&param2=22
+ */
 public interface Request {
 
-	/** https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods */
+	/** returns the name of the HTTP method used for this request (https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) */
 	public String method();
 
-	/** https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept */
+	/** returns the value of the "Accept" HTTP header (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept) */
 	public String acceptType();
 
-//	public String protocol(); // HTTP/1.1
-//	public String scheme(); // http
-//	public String host(); // localhost
-//	public int port(); // 8080
-//	public String contextPath(); // /webapp
-//	public String servletPath() // /servlet
-//	public String uri(); // /webapp/servlet/item/info/2
-//	public String url(); // http://localhost:8080/webapp/servlet/item/info/2
-
-	/** /item/info/2 */
+	/** returns the path for this request, i.e. "/item/info/2" in the example above (see {@link HttpServletRequest#getPathInfo()} */
 	public String path();
 
-	/** :itemId => 2, :toto => null */
+	/** returns the parameter value extracted from the path or null if not found, i.e. :itemId=>2 and :toto=>null. */
 	public String pathParameter(String name);
-	/** :itemId => 2, :toto => defaultValue */
+	/** returns the parameter value extracted from the path or "defaultValue" if not found, i.e. :itemId=>2 and :toto=>defaultValue. */
 	public String pathParameter(String name, String defaultValue);
-	/** see {@link Matcher.Path#params(String)} */
+	/** sets a parameter value as extracted by the current matching {@link Matcher} in {@link Matcher.Path#params(String)} */
 	public void addPathParameter(String name, String value);
 
-	/** param1=value1&param2=value21&param2=value22 */
+	/** returns the query for this request, i.e. "param1=value1&param2=21&param2=22" in the exemple above (see {@link HttpServletRequest#getQueryString()} */
 	public String query();
 
-	/** param1 => value1, param2 => value21, toto => null */
+	/** returns the parameter value extracted from the query or null if not found, i.e. param1=>value1, param2=>21 and toto=>null. */
 	public String queryParameter(String name);
-	/** param1 => value1, param2 => value21, toto => defaultValue */
+	/** returns the parameter value extracted from the query or "defaultValue" if not found, i.e. param1=>value1, param2=>21 and toto=>defaultValue. */
 	public String queryParameter(String name, String defaultValue);
-	/** param1 => [value1], param2 => [value21, value22], toto => null */
+	/** returns the parameter values extracted from the query or null if no value is found, i.e. param1=>[value1], param2=>[21,22] and toto=>null. */
 	public String[] queryParameterValues(String name);
 
+	/** default implementation to extract a parameter into an {@link Object} using a mapping {@link Function} and default value */
 	default <T> T queryParameterObject(String name, Function<String, T> map, T defaultValue) {
 		return Optional.ofNullable(queryParameter(name)).filter(s -> s.trim().length() > 0).map(map).orElse(defaultValue);
 	}
+	/** default implementation to extract a boolean parameter */
 	default boolean queryParameterBoolean(String name, boolean defaultValue) {
 		return defaultValue ? !"false".equals(queryParameter(name)) : "true".equals(queryParameter(name));
 	}
+	/** default implementation to extract a {@link Boolean} parameter */
 	default Boolean queryParameterBoolean(String name, Boolean defaultValue) {
 		return queryParameterObject(name, Boolean::valueOf, defaultValue);
 	}
+	/** default implementation to extract a long parameter */
 	default long queryParameterLong(String name, long defaultValue) {
 		return Optional.ofNullable(queryParameter(name)).stream().mapToLong(Long::parseLong).findAny().orElse(defaultValue);
 	}
+	/** default implementation to extract a {@link Long} parameter */
 	default Long queryParameterLong(String name, Long defaultValue) {
 		return queryParameterObject(name, Long::valueOf, defaultValue);
 	}
+	/** default implementation to extract a int parameter */
 	default int queryParameterInteger(String name, int defaultValue) {
 		return Optional.ofNullable(queryParameter(name)).stream().mapToInt(Integer::parseInt).findAny().orElse(defaultValue);
 	}
+	/** default implementation to extract a {@link Integer} parameter */
 	default Integer queryParameterInteger(String name, Integer defaultValue) {
 		return queryParameterObject(name, Integer::valueOf, defaultValue);
 	}
 
-//	public String contentType();
-//	public int contentLength();
-//	public String characterEncoding();
-
+	/** returns the content type of the of the body of the request, or null if the type is not known (i.e. {@link ServletRequest#getContentType()}) */
+	public String contentType();
+	/** returns the available length, in bytes, of the request body, or -1L if the length is not known (i.e. {@link ServletRequest#getContentLengthLong()} */
+	public long contentLength();
+	/** returns the name of the character encoding used in the body of this request (i.e. {@link ServletRequest#getCharacterEncoding()} */
+	public String characterEncoding();
+	/** returns the client address (i.e. {@link ServletRequest#getRemoteAddr()}) */
 	public String ip();
-//	public String userAgent();
-//	public String referer();
 
+	/** returns the value of the specified request header as a String */
 	public String header(String name);
+	/** returns the value of the specified request header as an int */
 	public int intHeader(String name);
+	/** returns the value of the specified request header as a long value that represents a Date object */
 	public long dateHeader(String name);
 
+	/** returns the object bound with the specified name, or null if no object is bound under the name yet */
 	public <T> T attribute(String name);
+	/** binds an object to this request, using the specified name */
 	public void attribute(String name, Object value);
+	/** removes the object bound with the specified name from this request */
 	public void removeAttribute(String name);
 
+	/** returns the cookie with the specified name, or null if no cookie exists with this name */
 	public Cookie cookie(String name);
+	/** returns the cookie with the specified name and path, or null if no cookie exists with this name and path */
 	public Cookie cookie(String name, String path);
+	/** searched for a cookie matching the specified {@link Predicate} and returns the first match, or null if no cookie matches the {@link Predicate} */
 	public Cookie cookie(Predicate<Cookie> predicate);
 
+	/** returns the {@link Upload} part with the specified name, or null if no part exists with this name in the request body */
 	public Upload upload(String name);
+	/** returns the collection of {@link Upload} extracted from the request body */
 	public Collection<? extends Upload> uploads();
 
+	/** returns the current {@link Session} associated with this request, or if the request does not have a session, creates one */
 	public Session session();
+	/** returns the current {@link Session} associated with this request, or if there is no current session and create is true, returns a new session */
 	public Session session(boolean create);
 
 }

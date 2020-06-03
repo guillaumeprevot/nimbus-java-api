@@ -49,35 +49,43 @@ public class ServletRequest implements Request {
 		return this.request.getHeader("Accept");
 	}
 
-	public String protocol() {
+	public String protocol() { // HTTP/1.1
 		return this.request.getProtocol();
 	}
 
-	public String scheme() {
+	public String scheme() { // http
 		return this.request.getScheme();
 	}
 
-	public String host() {
+	public String host() { // localhost
 		return this.request.getHeader("Host");
 	}
 
-	public int port() {
+	public String referer() {
+		return this.request.getHeader("Referer");
+	}
+
+	public String userAgent() {
+		return this.request.getHeader("User-Agent");
+	}
+
+	public int port() { // 8080
 		return this.request.getServerPort();
 	}
 
-	public String contextPath() {
+	public String contextPath() { // /webapp
 		return this.request.getContextPath();
 	}
 
-	public String servletPath() {
+	public String servletPath() { // /servlet
 		return this.request.getServletPath();
 	}
 
-	public String uri() {
+	public String uri() { // /webapp/servlet/item/info/2
 		return this.request.getRequestURI();
 	}
 
-	public String url() {
+	public String url() { // http://localhost:8080/webapp/servlet/item/info/2
 		return this.request.getRequestURL().toString();
 	}
 
@@ -121,14 +129,17 @@ public class ServletRequest implements Request {
 		return this.request.getParameterValues(name);
 	}
 
+	@Override
 	public String contentType() {
 		return this.request.getContentType();
 	}
 
-	public int contentLength() {
-		return this.request.getContentLength();
+	@Override
+	public long contentLength() {
+		return this.request.getContentLengthLong();
 	}
 
+	@Override
 	public String characterEncoding() {
 		return this.request.getCharacterEncoding();
 	}
@@ -136,14 +147,6 @@ public class ServletRequest implements Request {
 	@Override
 	public String ip() {
 		return this.request.getRemoteAddr();
-	}
-
-	public String userAgent() {
-		return this.request.getHeader("User-Agent");
-	}
-
-	public String referer() {
-		return this.request.getHeader("Referer");
 	}
 
 	@Override
@@ -208,16 +211,6 @@ public class ServletRequest implements Request {
 		return this.uploads;
 	}
 
-	/** Cette méthode peut être surchargée */
-	protected List<ServletUpload> loadUploads() {
-		try {
-			Collection<Part> parts = this.request.getParts();
-			return parts.stream().map(ServletUpload::new).collect(Collectors.toList());
-		} catch (IOException | ServletException ex) {
-			throw new RuntimeException(ex);
-		}
-	}
-
 	@Override
 	public ServletSession session() {
 		if (this.session == null)
@@ -232,6 +225,16 @@ public class ServletRequest implements Request {
 					.map((s) -> new ServletSession(this, s))
 					.orElse(null);
 		return this.session;
+	}
+
+	/** Cette méthode peut être surchargée */
+	protected List<ServletUpload> loadUploads() {
+		try {
+			Collection<Part> parts = this.request.getParts();
+			return parts.stream().map(ServletUpload::new).collect(Collectors.toList());
+		} catch (IOException | ServletException ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 
 	protected void invalidateSession() {
