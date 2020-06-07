@@ -1,9 +1,8 @@
 package fr.techgp.nimbus.server;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -97,13 +96,15 @@ public interface Request {
 	public Cookie cookie(String name);
 	/** returns the cookie with the specified name and path, or null if no cookie exists with this name and path */
 	public Cookie cookie(String name, String path);
-	/** searched for a cookie matching the specified {@link Predicate} and returns the first match, or null if no cookie matches the {@link Predicate} */
-	public Cookie cookie(Predicate<Cookie> predicate);
+	/** returns the list of {@link Cookie} objects sent with this request */
+	public List<? extends Cookie> cookies();
 
 	/** returns the {@link Upload} part with the specified name, or null if no part exists with this name in the request body */
 	public Upload upload(String name);
-	/** returns the collection of {@link Upload} extracted from the request body */
-	public Collection<? extends Upload> uploads();
+	/** returns the list of {@link Upload} parts with the specified name extracted from the request body */
+	public List<? extends Upload> uploads(String name);
+	/** returns the list of {@link Upload} parts extracted from the request body */
+	public List<? extends Upload> uploads();
 
 	/** returns the current {@link Session} associated with this request, or if the request does not have a session, creates one */
 	public Session session();

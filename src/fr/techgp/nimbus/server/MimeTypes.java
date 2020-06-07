@@ -32,6 +32,7 @@ public final class MimeTypes {
 	public static final String JS = "application/javascript";
 	public static final String JSON = "application/json";
 	public static final String BINARY = "application/octet-stream";
+	public static final String MULTIPART_FORMDATA = "multipart/form-data";
 
 	/** loads some file extension MIME types from default resource <i>/fr/techgp/nimbus/server/mimetypes.conf</i> */
 	public static final void loadDefaultMimeTypes() throws IOException {

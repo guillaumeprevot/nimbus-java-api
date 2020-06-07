@@ -3,18 +3,19 @@ package fr.techgp.nimbus.server.impl;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 
-import fr.techgp.nimbus.server.Cookie;
+import fr.techgp.nimbus.server.MimeTypes;
 import fr.techgp.nimbus.server.Request;
 import fr.techgp.nimbus.server.Upload;
 
@@ -182,32 +183,39 @@ public class ServletRequest implements Request {
 
 	@Override
 	public ServletCookie cookie(String name) {
-		return this.cookie((c) -> c.name().equals(name));
+		return this.cookies().stream().filter((c) -> c.name().equals(name)).findAny().orElse(null);
 	}
 
 	@Override
 	public ServletCookie cookie(String name, String path) {
-		return this.cookie((c) -> c.name().equals(name) && c.path().equals(path));
+		return this.cookies().stream().filter((c) -> c.name().equals(name) && c.path().equals(path)).findAny().orElse(null);
 	}
 
 	@Override
-	public ServletCookie cookie(Predicate<Cookie> predicate) {
-		if (this.cookies == null)
-			this.cookies = Arrays.stream(this.request.getCookies()).map(ServletCookie::new).collect(Collectors.toList());
-		return this.cookies.stream().filter(predicate).findAny().orElse(null);
+	public List<ServletCookie> cookies() {
+		if (this.cookies == null) {
+			Cookie[] cookies = this.request.getCookies();
+			this.cookies = cookies == null ? Collections.emptyList() : Arrays.stream(cookies).map(ServletCookie::new).collect(Collectors.toList());
+		}
+		return this.cookies;
 	}
 
 	@Override
 	public Upload upload(String name) {
-		if (this.uploads == null)
-			this.uploads = loadUploads();
-		return this.uploads.stream().filter((u) -> u.name().equals(name)).findAny().orElse(null);
+		return this.uploads().stream().filter((u) -> u.name().equals(name)).findAny().orElse(null);
 	}
 
 	@Override
-	public Collection<? extends Upload> uploads() {
-		if (this.uploads == null)
-			this.uploads = loadUploads();
+	public List<? extends Upload> uploads(String name) {
+		return this.uploads().stream().filter((u) -> u.name().equals(name)).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<? extends Upload> uploads() {
+		if (this.uploads == null) {
+			String mimetype = MimeTypes.byContentType(this.contentType());
+			this.uploads = MimeTypes.MULTIPART_FORMDATA.equals(mimetype) ? loadUploads() : Collections.emptyList();
+		}
 		return this.uploads;
 	}
 
