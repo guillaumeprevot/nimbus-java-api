@@ -213,7 +213,7 @@ public class ServletRequest implements Request {
 	@Override
 	public List<? extends Upload> uploads() {
 		if (this.uploads == null) {
-			String mimetype = MimeTypes.byContentType(this.contentType());
+			String mimetype = Optional.ofNullable(this.contentType()).map(MimeTypes::byContentType).orElse(null);
 			this.uploads = MimeTypes.MULTIPART_FORMDATA.equals(mimetype) ? loadUploads() : Collections.emptyList();
 		}
 		return this.uploads;

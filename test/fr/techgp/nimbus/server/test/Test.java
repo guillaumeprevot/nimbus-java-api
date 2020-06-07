@@ -8,14 +8,21 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.google.gson.JsonObject;
 
+import fr.techgp.nimbus.server.Cookie;
 import fr.techgp.nimbus.server.Render;
+import fr.techgp.nimbus.server.Request;
+import fr.techgp.nimbus.server.Response;
 import fr.techgp.nimbus.server.Router;
+import fr.techgp.nimbus.server.Session;
+import fr.techgp.nimbus.server.Upload;
 import fr.techgp.nimbus.server.Utils;
 import fr.techgp.nimbus.server.impl.JettyServer;
+import fr.techgp.nimbus.server.impl.MethodRoute;
 
 public class Test {
 
@@ -80,6 +87,24 @@ public class Test {
 	public static Test get(String request) { return new Test(request).method("GET"); }
 	public static Test post(String request) { return new Test(request).method("POST"); }
 
+	public static Render reflect(Request request, Response response, Upload upload, Upload[] uploads,
+			Cookie cookie, Cookie[] cookies, Session session, Optional<Session> optionalSession,
+			String stringValue, Integer integerValue, int intValue, Optional<Integer> optionalInteger) {
+		System.out.println("Reflect : " + request);
+		System.out.println("Reflect : " + response);
+		System.out.println("Reflect : " + upload);
+		System.out.println("Reflect : " + uploads.length);
+		System.out.println("Reflect : " + cookie);
+		System.out.println("Reflect : " + cookies.length);
+		System.out.println("Reflect : " + session);
+		System.out.println("Reflect : " + optionalSession);
+		System.out.println("Reflect : " + stringValue);
+		System.out.println("Reflect : " + integerValue);
+		System.out.println("Reflect : " + intValue);
+		System.out.println("Reflect : " + optionalInteger);
+		return Render.string("OK");
+	}
+
 	public static void main(String[] args) {
 		try {
 			Router r = new Router();
@@ -101,6 +126,8 @@ public class Test {
 			r.get("/redirect", (req, res) -> Render.redirect("/hello"));
 			r.redirect("/redirect2", "/redirect");
 			r.get("/samepage", (req, res) -> Render.samePage());
+			r.get("/reflect", MethodRoute.to(Test.class, "reflect"));
+			r.get("/reflect2", MethodRoute.to("fr.techgp.nimbus.server.test.Test.reflect"));
 
 			r.after("/*", (req, res) -> { res.header("After1", "After1"); return null; });
 
@@ -151,7 +178,9 @@ public class Test {
 		get("/samepage").customize(c -> c.addRequestProperty("Referer", "/hello")).length(5).body("world").filters(true, true, true).run();
 		// Checking SamePage, using a Referer simulating a current "/bytes" page
 		get("/samepage").customize(c -> c.addRequestProperty("Referer", "/bytes")).length(5).body("bytes").mimetype("application/octet-stream").filters(true, false, true).run();
-
+		// Checking custom route using Java reflection to inject parameters
+		get("/reflect?intValue=42&stringValue=abc").length(2).body("OK").run();
+		get("/reflect2?intValue=42&stringValue=abc").length(2).body("OK").run();
 		// to continue...
 	}
 }
