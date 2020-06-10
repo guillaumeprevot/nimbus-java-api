@@ -86,23 +86,30 @@ public class Test {
 
 	public static Test get(String request) { return new Test(request).method("GET"); }
 	public static Test post(String request) { return new Test(request).method("POST"); }
+	public static void assertThat(boolean test) { if (!test) throw new AssertionError(); }
 
 	public static Render reflect(Request request, Response response, Upload upload, Upload[] uploads,
 			Cookie cookie, Cookie[] cookies, Session session, Optional<Session> optionalSession,
 			String stringValue, Integer integerValue, int intValue, Optional<Integer> optionalInteger) {
-		System.out.println("Reflect : " + request);
-		System.out.println("Reflect : " + response);
-		System.out.println("Reflect : " + upload);
-		System.out.println("Reflect : " + uploads.length);
-		System.out.println("Reflect : " + cookie);
-		System.out.println("Reflect : " + cookies.length);
-		System.out.println("Reflect : " + session);
-		System.out.println("Reflect : " + optionalSession);
-		System.out.println("Reflect : " + stringValue);
-		System.out.println("Reflect : " + integerValue);
-		System.out.println("Reflect : " + intValue);
-		System.out.println("Reflect : " + optionalInteger);
+		assertThat(request != null);
+		assertThat(response != null);
+		assertThat(upload == null);
+		assertThat(uploads.length == 0);
+		assertThat(cookie == null);
+		assertThat(cookies.length == 0);
+		assertThat(session != null);
+		assertThat(optionalSession != null && optionalSession.isPresent());
+		assertThat("abc".equals(stringValue));
+		assertThat(null == integerValue);
+		assertThat(42 == intValue);
+		assertThat(optionalInteger != null && optionalInteger.isEmpty());
 		return Render.string("OK");
+	}
+
+	public static class ReflectTest {
+		public Render run(String text) {
+			return Render.string(text);
+		}
 	}
 
 	public static void main(String[] args) {
@@ -128,6 +135,7 @@ public class Test {
 			r.get("/samepage", (req, res) -> Render.samePage());
 			r.get("/reflect", MethodRoute.to(Test.class, "reflect"));
 			r.get("/reflect2", MethodRoute.to("fr.techgp.nimbus.server.test.Test.reflect"));
+			r.get("/reflect3", MethodRoute.to(new ReflectTest(), "run"));
 
 			r.after("/*", (req, res) -> { res.header("After1", "After1"); return null; });
 
@@ -181,6 +189,7 @@ public class Test {
 		// Checking custom route using Java reflection to inject parameters
 		get("/reflect?intValue=42&stringValue=abc").length(2).body("OK").run();
 		get("/reflect2?intValue=42&stringValue=abc").length(2).body("OK").run();
+		get("/reflect3?text=Abc").length(3).body("Abc").run();
 		// to continue...
 	}
 }

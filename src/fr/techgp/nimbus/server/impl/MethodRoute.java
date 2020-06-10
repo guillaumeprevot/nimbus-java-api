@@ -3,6 +3,7 @@ package fr.techgp.nimbus.server.impl;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -32,11 +33,21 @@ import fr.techgp.nimbus.server.Utils;
 public class MethodRoute implements Route {
 
 	private final Method method;
+	private final Object instance;
 	private final Extractor<?>[] extractors;
 
-	public MethodRoute(Method method) {
+	public MethodRoute(Method method, Object instance) {
 		super();
+		if (method == null)
+			throw new UnsupportedOperationException("The method is required");
+		if (! Modifier.isPublic(method.getModifiers()))
+			throw new UnsupportedOperationException("The method must be public");
+		if (instance == null && !Modifier.isStatic(method.getModifiers()))
+			throw new UnsupportedOperationException("The method must be static when the instance is null");
+		if (instance != null && Modifier.isStatic(method.getModifiers()))
+			throw new UnsupportedOperationException("The method can not be static when the instance is set");
 		this.method = method;
+		this.instance = instance;
 		this.extractors = new Extractor<?>[method.getParameterCount()];
 		Parameter[] parameters = method.getParameters();
 		for (int i = 0; i < this.extractors.length; i++) {
@@ -44,7 +55,7 @@ public class MethodRoute implements Route {
 			Type type = parameter.getParameterizedType();
 			Extractor<?> extractor = findExtractor(type);
 			if (extractor == null)
-				throw new UnsupportedOperationException("Extracting " + type + " from request is not supported");
+				throw new UnsupportedOperationException("The parameter type \"" + type + "\" is not supported");
 			this.extractors[i] = extractor;
 		}
 	}
@@ -57,15 +68,17 @@ public class MethodRoute implements Route {
 			try {
 				values[i] = this.extractors[i].extract(request, response, parameters[i].getName());
 			} catch (Exception ex) {
-				System.err.println("Extracting value failed for " + parameters[i].getName() + " (" + parameters[i].getType() + ")");
-				ex.printStackTrace();
-				values[i] = null;
+				throw new ReflectiveOperationException("Failed to extract parameter " + parameters[i].getName(), ex);
 			}
 		}
-		Object result = this.method.invoke(null, values);
-		if (result instanceof Render)
-			return (Render) result;
-		return null;
+		try {
+			Object result = this.method.invoke(this.instance, values);
+			if (result instanceof Render)
+				return (Render) result;
+			return null;
+		} catch (InvocationTargetException | IllegalAccessException | IllegalArgumentException ex) {
+			throw new ReflectiveOperationException("Failed to invoke method " + this.method.getDeclaringClass().getSimpleName() + "." + this.method.getName(), ex);
+		}
 	}
 
 	public static final MethodRoute to(String method) throws ClassNotFoundException, NoSuchMethodException {
@@ -73,16 +86,24 @@ public class MethodRoute implements Route {
 		String className = method.substring(0, i);
 		String methodName = method.substring(i + 1);
 		Class<?> methodClass = Class.forName(className);
-		return to(methodClass, methodName);
+		return new MethodRoute(find(methodClass, methodName, true), null);
 	}
 
 	public static final MethodRoute to(Class<?> methodClass, String methodName) throws NoSuchMethodException {
+		return new MethodRoute(find(methodClass, methodName, true), null);
+	}
+
+	public static final MethodRoute to(Object instance, String methodName) throws NoSuchMethodException {
+		return new MethodRoute(find(instance.getClass(), methodName, false), instance);
+	}
+
+	private static final Method find(Class<?> methodClass, String methodName, boolean isStatic) throws NoSuchMethodException {
 		Method[] methods = methodClass.getDeclaredMethods();
 		for (int i = 0; i < methods.length; i++) {
 			if (methods[i].getName().equals(methodName)
-					&& Modifier.isStatic(methods[i].getModifiers())
+					&& isStatic == Modifier.isStatic(methods[i].getModifiers())
 					&& Modifier.isPublic(methods[i].getModifiers()))
-				return new MethodRoute(methods[i]);
+				return methods[i];
 		}
 		throw new NoSuchMethodException(methodClass.getName() + "." + methodName);
 	}

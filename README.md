@@ -70,3 +70,4 @@ static.1.prefix=/public2
 - 2020-05-27 : add new routing API
 - 2020-05-30 : add new web server application
 - 2020-05-31 : add reusable MIME type manager
+- 2020-06-07 : add route implementation using Java "reflection"
