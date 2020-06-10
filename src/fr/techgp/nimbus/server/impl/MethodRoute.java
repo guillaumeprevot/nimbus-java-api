@@ -3,6 +3,7 @@ package fr.techgp.nimbus.server.impl;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -15,10 +16,18 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.function.Supplier;
 
 import fr.techgp.nimbus.server.Cookie;
 import fr.techgp.nimbus.server.Matcher;
@@ -120,26 +129,21 @@ public class MethodRoute implements Route {
 
 	private static final Map<Type, Extractor<?>> extractorMap = new HashMap<>();
 	private static final Map<Class<?>, ValueExtractor<?>> valueExtractorMap = new HashMap<>();
+	private static final Map<Class<? extends Collection<?>>, Supplier<Collection<Object>>> collectionSupplierMap = new HashMap<>();
 
-	private static final void addExtractor(Type type, Extractor<?> extractor) {
+	public static final void addExtractor(Type type, Extractor<?> extractor) {
 		extractorMap.put(type, extractor);
 	}
 
-	private static final <T> void addValueExtractor(Class<T> clazz, ValueExtractor<T> extractor) {
+	public static final <T> void addValueExtractor(Class<T> clazz, ValueExtractor<T> extractor) {
 		valueExtractorMap.put(clazz, extractor);
 	}
 
-	static {
-		// Add special support for execution context injection
-		addExtractor(Request.class, (req, res, name) -> req);
-		addExtractor(Response.class, (req, res, name) -> res);
-		addExtractor(Upload.class, (req, res, name) -> req.upload(name));
-		addExtractor(Upload[].class, (req, res, name) -> req.uploads(name).toArray(new Upload[0]));
-		addExtractor(Cookie.class, (req, res, name) -> req.cookie(name));
-		addExtractor(Cookie[].class, (req, res, name) -> req.cookies().toArray(new Cookie[0]));
-		addExtractor(Session.class, (req, res, name) -> req.session(true));
-		// see buildExtractor for Optional<Session>
+	public static final <T extends Collection<?>> void addCollectionSupplier(Class<T> clazz, Supplier<Collection<Object>> supplier) {
+		collectionSupplierMap.put(clazz, supplier);
+	}
 
+	static {
 		// Add support for String values
 		addValueExtractor(String.class, (s) -> s.orElse(null));
 
@@ -171,21 +175,23 @@ public class MethodRoute implements Route {
 		//addValueExtractor(Class.class, (s) -> s.map(Class::forName).orElse(null));
 		//addValueExtractor(File.class, (s) -> s.map(File::new).orElse(null));
 		//addValueExtractor(URL.class, (s) -> s.map(URL::new).orElse(null));
+
+		// Add some collection suppliers
+		addCollectionSupplier(Set.class, HashSet::new);
+		addCollectionSupplier(HashSet.class, HashSet::new);
+		addCollectionSupplier(SortedSet.class, TreeSet::new);
+		addCollectionSupplier(TreeSet.class, TreeSet::new);
+		addCollectionSupplier(List.class, ArrayList::new);
+		addCollectionSupplier(ArrayList.class, ArrayList::new);
+		addCollectionSupplier(Collection.class, ArrayList::new);
 	}
 
 	private static final Extractor<?> findExtractor(Type type) {
 		// Search for known extractors (Request, Response, Upload, Cookie, Session or cached later)
 		Extractor<?> e = extractorMap.get(type);
 		if (e == null) {
-			// Search for simple value extractors (String, Integer, int, Double, double, ...)
-			ValueExtractor<?> ve = valueExtractorMap.get(type);
-			if (ve != null) {
-				// Transform simple value extractors to parameter extractor
-				e = (req, res, name) -> ve.extract(anyParameter(req, name));
-			} else {
-				// Try to dynamically build an extractor for "type"
-				e = buildExtractor(type);
-			}
+			// Try to dynamically build an extractor for "type"
+			e = buildExtractor(type);
 			// Cache newly created Extractor<?> each time the same type is found
 			if (e != null)
 				extractorMap.put(type, e);
@@ -193,8 +199,8 @@ public class MethodRoute implements Route {
 		return e;
 	}
 
-	public static final Extractor<?> buildExtractor(Type type) {
-		// Special parameter types to get content from context
+	private static final Extractor<?> buildExtractor(Type type) {
+		// Special extractors for context
 		if (Request.class.equals(type))
 			return (req, res, name) -> req;
 		if (Response.class.equals(type))
@@ -212,17 +218,50 @@ public class MethodRoute implements Route {
 		if (isParameterized(type, Optional.class, Session.class))
 			return (req, res, name) -> Optional.ofNullable(req.session(true));
 
+		// Try to build an extractor for Class
+		if (type instanceof Class<?>) {
+			Class<?> classType = (Class<?>) type;
+
+			// Extractors for simple values
+			ValueExtractor<?> valueExtractor = valueExtractorMap.get(classType);
+			if (valueExtractor != null)
+				return (req, res, name) -> valueExtractor.extract(anyParameter(req, name).filter((s) -> !s.isBlank()));
+
+			// Extractors for Enum values
+			if (classType.isEnum())
+				return (req, res, name) -> anyParameter(req, name).map((s) -> asEnum(classType, s)).orElse(null);
+
+			// Extractors for simple value arrays
+			if (classType.isArray()) {
+				ValueExtractor<?> elementExtractor = valueExtractorMap.get(classType.getComponentType());
+				if (elementExtractor != null) {
+					return (req, res, name) -> {
+						String[] parameterValues = req.queryParameterValues(name);
+						if (parameterValues == null)
+							return null;
+						Object array = Array.newInstance(classType.getComponentType(), parameterValues.length);
+						for (int i = 0; i < parameterValues.length; i++) {
+							Object element = elementExtractor.extract(Optional.ofNullable(parameterValues[i]).filter((s) -> !s.isBlank()));
+							Array.set(array, i, element);
+						}
+						return array;
+					};
+				}
+			}
+		}
+
 		// Try to build an extractor for ParameterizedType
 		if (type instanceof ParameterizedType) {
-			ParameterizedType pt = (ParameterizedType) type;
-			if (Optional.class.equals(pt.getRawType())) {
-				// Wrap Extractor<T> to create an extractor for Extractor<Optional<T>>
-				Extractor<?> oe = findExtractor(pt.getActualTypeArguments()[0]);
-				if (oe != null) {
+			ParameterizedType parameterizedType = (ParameterizedType) type;
+
+			// Extractors for Optional<T> using Extractors for T
+			if (Optional.class.equals(parameterizedType.getRawType())) {
+				Extractor<?> optionalExtractor = findExtractor(parameterizedType.getActualTypeArguments()[0]);
+				if (optionalExtractor != null) {
 					return (req, res, name) -> {
 						try {
-							Object v = oe.extract(req, res, name);
-							return Optional.ofNullable(v);
+							Object optionalValue = optionalExtractor.extract(req, res, name);
+							return Optional.ofNullable(optionalValue);
 						} catch (NoSuchElementException ex) {
 							// missing "byte" will throw a NoSuchElementException
 							return Optional.empty();
@@ -230,8 +269,39 @@ public class MethodRoute implements Route {
 					};
 				}
 			}
+
+			// Extractors for Collections
+			if (parameterizedType.getRawType() instanceof Class<?>) {
+				Class<?> collectionClass = (Class<?>) parameterizedType.getRawType();
+				Supplier<Collection<Object>> collectionSupplier = collectionSupplierMap.get(collectionClass);
+
+				if ((collectionSupplier != null) && (parameterizedType.getActualTypeArguments()[0] instanceof Class<?>)) {
+					Class<?> elementClass = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+					ValueExtractor<?> elementExtractor = valueExtractorMap.get(elementClass);
+
+					if (elementExtractor != null) {
+						return (req, res, name) -> {
+							String[] parameterValues = req.queryParameterValues(name);
+							if (parameterValues == null)
+								return null;
+							Collection<Object> collection = collectionSupplier.get();
+							for (int i = 0; i < parameterValues.length; i++) {
+								Object element = elementExtractor.extract(Optional.ofNullable(parameterValues[i]).filter((s) -> !s.isBlank()));
+								collection.add(element);
+							}
+							return collection;
+						};
+					}
+				}
+			}
 		}
+		// TODO MethodRoute : POJO, GenericArrayType ?, WildcardType ?
 		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static final <T extends Enum<T>> T asEnum(Class<?> clazz, String value) {
+		return Enum.valueOf((Class<T>) clazz, value);
 	}
 
 	private static final boolean isParameterized(Type type, Type rawType, Type actualTypeArgument) {

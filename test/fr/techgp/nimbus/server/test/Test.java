@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -90,7 +91,8 @@ public class Test {
 
 	public static Render reflect(Request request, Response response, Upload upload, Upload[] uploads,
 			Cookie cookie, Cookie[] cookies, Session session, Optional<Session> optionalSession,
-			String stringValue, Integer integerValue, int intValue, Optional<Integer> optionalInteger) {
+			String stringValue, Integer integerValue, int intValue, Optional<Integer> optionalInteger,
+			Integer[] integerValues, int[] intValues, List<Integer> collection, EnumTest enumValue) {
 		assertThat(request != null);
 		assertThat(response != null);
 		assertThat(upload == null);
@@ -103,12 +105,23 @@ public class Test {
 		assertThat(null == integerValue);
 		assertThat(42 == intValue);
 		assertThat(optionalInteger != null && optionalInteger.isEmpty());
+		assertThat(integerValues != null && integerValues.length == 3 && integerValues[0] == 1 && integerValues[1] == null && integerValues[2] == 2);
+		assertThat(intValues != null && intValues.length == 2 && intValues[0] == 1 && intValues[1] == 2);
+		assertThat(collection != null && collection.size() == 3 && collection.contains(1) && collection.contains(null) && collection.contains(2));
+		assertThat(EnumTest.Something.equals(enumValue));
 		return Render.string("OK");
 	}
 
+	public static enum EnumTest {
+		Something,
+		Anything,
+		Nothing
+	}
+
 	public static class ReflectTest {
-		public Render run(String text) {
-			return Render.string(text);
+		@SuppressWarnings("static-method")
+		public Render run(String stringValue) {
+			return Render.string(stringValue);
 		}
 	}
 
@@ -116,6 +129,7 @@ public class Test {
 		try {
 			Router r = new Router();
 
+			// r.before("/*", (req, res) -> { System.out.println(((ServletRequest) req).raw().getParameterMap()); return null; });
 			r.before("/*", (req, res) -> { res.header("Before1", "Before1"); return null; });
 			r.before("/hello", (req, res) -> { res.header("Before2", "Before2"); return null; });
 
@@ -187,9 +201,11 @@ public class Test {
 		// Checking SamePage, using a Referer simulating a current "/bytes" page
 		get("/samepage").customize(c -> c.addRequestProperty("Referer", "/bytes")).length(5).body("bytes").mimetype("application/octet-stream").filters(true, false, true).run();
 		// Checking custom route using Java reflection to inject parameters
-		get("/reflect?intValue=42&stringValue=abc").length(2).body("OK").run();
-		get("/reflect2?intValue=42&stringValue=abc").length(2).body("OK").run();
-		get("/reflect3?text=Abc").length(3).body("Abc").run();
+		String p = "intValue=42&stringValue=abc&integerValues=1&integerValues=&integerValues=2&intValues=1&intValues=2"
+				+ "&collection=1&collection=&collection=2&enumValue=Something";
+		get("/reflect?" + p).length(2).body("OK").run();
+		get("/reflect2?" + p).length(2).body("OK").run();
+		get("/reflect3?" + p).length(3).body("abc").run();
 		// to continue...
 	}
 }
