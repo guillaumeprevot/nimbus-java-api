@@ -90,7 +90,10 @@ public class JettyServer {
 			ServletRequest req = new JettyServletRequest(request, this.multipart);
 			ServletResponse res = new ServletResponse(response);
 			this.router.process(req, res);
+			// Save client session, if any
+			ClientSession.save(req.clientSession(false), res);
 			try {
+				// Write response
 				res.body().render(req, res, StandardCharsets.UTF_8, () -> {
 					try {
 						return response.getOutputStream();

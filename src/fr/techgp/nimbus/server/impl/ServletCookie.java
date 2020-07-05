@@ -1,5 +1,7 @@
 package fr.techgp.nimbus.server.impl;
 
+import java.util.Objects;
+
 import fr.techgp.nimbus.server.Cookie;
 
 public class ServletCookie implements Cookie {
@@ -32,7 +34,7 @@ public class ServletCookie implements Cookie {
 
 	@Override
 	public void path(String path) {
-		this.cookie.setPath(path);
+		this.cookie.setPath(Objects.requireNonNull(path));
 	}
 
 	@Override
@@ -42,7 +44,7 @@ public class ServletCookie implements Cookie {
 
 	@Override
 	public void value(String value) {
-		this.cookie.setValue(value);
+		this.cookie.setValue(Objects.requireNonNull(value));
 	}
 
 	@Override
@@ -52,7 +54,7 @@ public class ServletCookie implements Cookie {
 
 	@Override
 	public void domain(String domain) {
-		this.cookie.setDomain(domain);
+		this.cookie.setDomain(Objects.requireNonNull(domain));
 	}
 
 	@Override
