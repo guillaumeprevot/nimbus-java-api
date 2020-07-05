@@ -10,8 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.function.Consumer;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import fr.techgp.nimbus.server.Cookie;
@@ -22,12 +24,14 @@ import fr.techgp.nimbus.server.Router;
 import fr.techgp.nimbus.server.Session;
 import fr.techgp.nimbus.server.Upload;
 import fr.techgp.nimbus.server.Utils;
+import fr.techgp.nimbus.server.impl.ClientSession;
 import fr.techgp.nimbus.server.impl.JettyServer;
 import fr.techgp.nimbus.server.impl.MethodRoute;
 
 public class Test {
 
 	private static final int PORT = 8080;
+	private static String cookieLine = null;
 
 	private final String request;
 	private String method = "GET";
@@ -40,6 +44,8 @@ public class Test {
 	private boolean before2 = false;
 	private boolean after1 = true;
 	private Map<String, String> headers = new HashMap<>();
+	private boolean sendCookie = false;
+	private boolean saveCookie = false;
 
 	public Test(String request) {
 		this.request = request;
@@ -53,10 +59,13 @@ public class Test {
 	public Test body(String body) { this.body = body; return this; }
 	public Test filters(boolean before1, boolean before2, boolean after1) { this.before1 = before1; this.before2 = before2; this.after1 = after1; return this; }
 	public Test header(String header, String value) { this.headers.put(header, value); return this; }
+	public Test cookie(boolean send, boolean save) { this.sendCookie = send; this.saveCookie = save; return this; }
 
 	public void run() throws Exception {
 		HttpURLConnection.setFollowRedirects(true);
 		HttpURLConnection connection = (HttpURLConnection) new URL("http", "localhost", PORT, this.request).openConnection();
+		if (this.sendCookie)
+			connection.setRequestProperty("Cookie", Test.cookieLine);
 		connection.setRequestMethod(this.method);
 		if (this.customizer != null)
 			this.customizer.accept(connection);
@@ -82,6 +91,11 @@ public class Test {
 				if (!header.getValue().equals(connection.getHeaderField(header.getKey())))
 					throw new Exception("Mauvais header " + connection.getHeaderField(header.getKey()));
 			}
+		}
+		if (this.saveCookie) {
+			Test.cookieLine = connection.getHeaderField("Set-Cookie");
+			if (Test.cookieLine == null)
+				throw new Exception("Cookie manquant");
 		}
 	}
 
@@ -150,6 +164,20 @@ public class Test {
 			r.get("/reflect", MethodRoute.to(Test.class, "reflect"));
 			r.get("/reflect2", MethodRoute.to("fr.techgp.nimbus.server.test.Test.reflect"));
 			r.get("/reflect3", MethodRoute.to(new ReflectTest(), "run"));
+			r.get("/session", (req, res) -> {
+				try {
+					Session currentSession = req.clientSession(false);
+					JsonElement currentElement = currentSession == null ? null : currentSession.attribute("value");
+					String currentValue = currentElement == null ? null : currentElement.getAsString();
+					Session updatedSession = req.clientSession();
+					updatedSession.maxInactiveInterval(2);
+					updatedSession.attribute("value", req.queryParameter("value"));
+					return Render.string(currentValue == null ? "" : currentValue);
+				} catch (RuntimeException ex) {
+					ex.printStackTrace();
+					throw ex;
+				}
+			});
 
 			r.after("/*", (req, res) -> { res.header("After1", "After1"); return null; });
 
@@ -157,6 +185,7 @@ public class Test {
 			s.start(r);
 
 			try {
+				runClientSessionEncryptionTests();
 				runAllTests();
 				System.out.println("OK");
 			} finally {
@@ -173,6 +202,19 @@ public class Test {
 			Utils.copy(is, baos);
 			return new String(baos.toByteArray(), StandardCharsets.UTF_8);
 		}
+	}
+
+	private static final void runClientSessionEncryptionTests() {
+		byte[] key = ClientSession.generateAES256SecretKey();
+		char[] ascii = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~".toCharArray();
+
+		String input = Utils.randomAscii(new Random(), 256, true, true, true, ascii);
+		byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
+		String message = ClientSession.encrypt(key, inputBytes);
+		byte[] outputBytes = ClientSession.decrypt(key, message);
+		String output = new String(outputBytes, StandardCharsets.UTF_8);
+
+		assertThat(input.equals(output));
 	}
 
 	private static final void runAllTests() throws Exception {
@@ -206,6 +248,15 @@ public class Test {
 		get("/reflect?" + p).length(2).body("OK").run();
 		get("/reflect2?" + p).length(2).body("OK").run();
 		get("/reflect3?" + p).length(3).body("abc").run();
+		// Check client session
+		ClientSession.CLIENT_SESSION_SECRET_KEY = Utils.hex2bytes("ce26b4bb1dc61766fbe866eb5550ab81cc8f48e81dd9a73b98cacb2c66c3e3c0");
+		get("/session?value=toto").cookie(false, true).length(0).run(); // new cookie, nothing in session, store toto
+		get("/session?value=titi").cookie(true, true).length(4).body("toto").run(); // send cookie, get toto, store titi
+		get("/session?value=tutu").cookie(true, true).length(4).body("titi").run(); // send cookie, get titi, store tutu
+		get("/session?value=tata").cookie(false, true).length(0).run(); // don't send cookie, nothing in session, store tata
+		get("/session?value=tata").cookie(true, true).length(4).body("tata").run(); // send cookie, get tata, store tata
+		Thread.sleep(3000); // wait for session timeout
+		get("/session?value=tata").cookie(true, true).length(0).run(); // send cookie, expired session, no result
 		// to continue...
 	}
 }

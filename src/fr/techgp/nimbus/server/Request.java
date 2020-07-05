@@ -111,4 +111,9 @@ public interface Request {
 	/** returns the current {@link Session} associated with this request, or if there is no current session and create is true, returns a new session */
 	public Session session(boolean create);
 
+	/** returns the current client {@link Session} associated with this request, or if the request does not have a session, creates one */
+	public Session clientSession();
+	/** returns the current client {@link Session} associated with this request, or if there is no current session and create is true, returns a new session */
+	public Session clientSession(boolean create);
+
 }

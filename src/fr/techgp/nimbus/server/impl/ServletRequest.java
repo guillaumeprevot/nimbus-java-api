@@ -31,6 +31,8 @@ public class ServletRequest implements Request {
 	private List<ServletUpload> uploads;
 	/** The session wrapper */
 	private ServletSession session;
+	/** The client session wrapper */
+	private ClientSession clientSession;
 
 	public ServletRequest(HttpServletRequest request) {
 		this.request = request;
@@ -233,6 +235,20 @@ public class ServletRequest implements Request {
 					.map((s) -> new ServletSession(this, s))
 					.orElse(null);
 		return this.session;
+	}
+
+	@Override
+	public ClientSession clientSession() {
+		if (this.clientSession == null)
+			this.clientSession = ClientSession.load(this, true);
+		return this.clientSession;
+	}
+
+	@Override
+	public ClientSession clientSession(boolean create) {
+		if (this.clientSession == null)
+			this.clientSession = ClientSession.load(this, create);
+		return this.clientSession;
 	}
 
 	/** Cette méthode peut être surchargée */

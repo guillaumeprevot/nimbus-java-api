@@ -2,7 +2,6 @@ package fr.techgp.nimbus.server.impl;
 
 import javax.servlet.http.HttpServletResponse;
 
-import fr.techgp.nimbus.server.Cookie;
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Response;
 
@@ -90,12 +89,12 @@ public class ServletResponse implements Response {
 	}
 
 	@Override
-	public Cookie cookie(String name, String value) {
-		return cookie(name, "", value, null, -1, true, true);
+	public ServletCookie cookie(String name, String value) {
+		return cookie(name, "/", value, "", -1, true, true);
 	}
 
 	@Override
-	public Cookie cookie(String name, String path, String value, String domain, int maxAge, boolean secure, boolean httpOnly) {
+	public ServletCookie cookie(String name, String path, String value, String domain, int maxAge, boolean secure, boolean httpOnly) {
 		ServletCookie cookie = new ServletCookie(name, value);
 		cookie.path(path);
 		cookie.domain(domain);
@@ -107,7 +106,7 @@ public class ServletResponse implements Response {
 	}
 
 	@Override
-	public Cookie removeCookie(String name) {
+	public ServletCookie removeCookie(String name) {
 		return cookie(name, "", "", null, 0, true, true);
 	}
 
