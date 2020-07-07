@@ -7,6 +7,7 @@ import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Optional;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -22,8 +23,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
-import fr.techgp.nimbus.server.Session;
+import fr.techgp.nimbus.server.ClientSession;
 import fr.techgp.nimbus.server.Utils;
 
 /**
@@ -35,7 +37,7 @@ import fr.techgp.nimbus.server.Utils;
  *   https://crypto.stanford.edu/cs142/papers/web-session-management.pdf
  * This document is saved in the "doc" folder.
  */
-public class ClientSession implements Session {
+public class JSONClientSession implements ClientSession {
 
 	/** The name of the cookie storing session on the client-side */
 	public static final String CLIENT_SESSION_COOKIE_NAME = "nimbus-client-session";
@@ -53,11 +55,11 @@ public class ClientSession implements Session {
 	private int maxInactiveInterval;
 	private JsonObject attributes;
 
-	public ClientSession() {
+	public JSONClientSession() {
 		this.initDefaults();
 	}
 
-	public ClientSession(String id, long creationTime, long lastAccessedTime, JsonObject attributes) {
+	public JSONClientSession(String id, long creationTime, long lastAccessedTime, JsonObject attributes) {
 		this.id = id;
 		this.creationTime = creationTime;
 		this.lastAccessedTime = lastAccessedTime;
@@ -88,27 +90,49 @@ public class ClientSession implements Session {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T attribute(String name) {
+	public <T extends JsonElement> T attribute(String name) {
 		JsonElement e = this.attributes.get(name);
-		return e instanceof JsonNull ? null : (T) e;
+		if (e instanceof JsonNull)
+			return null;
+		return (T) e;
 	}
 
 	@Override
-	public void attribute(String name, Object value) {
+	public void attribute(String name, JsonElement value) {
 		if (value == null)
 			this.attributes.add(name, JsonNull.INSTANCE);
-		else if (value instanceof JsonElement)
-			this.attributes.add(name, (JsonElement) value);
-		else if (value instanceof Boolean)
-			this.attributes.addProperty(name, (Boolean) value);
-		else if (value instanceof Character)
-			this.attributes.addProperty(name, (Character) value);
-		else if (value instanceof Number)
-			this.attributes.addProperty(name, (Number) value);
-		else if (value instanceof String)
-			this.attributes.addProperty(name, (String) value);
 		else
-			throw new InvalidParameterException(value.getClass().getName() + " is not a supported client-session attribute type");
+			this.attributes.add(name, value);
+	}
+
+	@Override
+	public String stringAttribute(String name) {
+		return Optional.<JsonElement>ofNullable(attribute(name)).map(JsonElement::getAsString).orElse(null);
+	}
+
+	@Override
+	public void stringAttribute(String name, String value) {
+		this.attributes.add(name, value == null ? JsonNull.INSTANCE : new JsonPrimitive(value));
+	}
+
+	@Override
+	public Boolean booleanAttribute(String name) {
+		return Optional.<JsonElement>ofNullable(attribute(name)).map((e) -> Boolean.valueOf(e.getAsBoolean())).orElse(null);
+	}
+
+	@Override
+	public void booleanAttribute(String name, Boolean value) {
+		this.attributes.add(name, value == null ? JsonNull.INSTANCE : new JsonPrimitive(value));
+	}
+
+	@Override
+	public Number numberAttribute(String name) {
+		return Optional.<JsonElement>ofNullable(attribute(name)).map(JsonElement::getAsNumber).orElse(null);
+	}
+
+	@Override
+	public void numberAttribute(String name, Number value) {
+		this.attributes.add(name, value == null ? JsonNull.INSTANCE : new JsonPrimitive(value));
 	}
 
 	@Override
@@ -140,16 +164,16 @@ public class ClientSession implements Session {
 		this.attributes = new JsonObject();
 	}
 
-	protected static ClientSession load(ServletRequest request, boolean create) {
+	protected static JSONClientSession load(ServletRequest request, boolean create) {
 		// Get the client-session cookie
 		ServletCookie cookie = request.cookie(CLIENT_SESSION_COOKIE_NAME);
 		if (cookie == null)
-			return create ? new ClientSession() : null;
+			return create ? new JSONClientSession() : null;
 
 		// Load secret key
-		byte[] secretKey = ClientSession.CLIENT_SESSION_SECRET_KEY;
+		byte[] secretKey = JSONClientSession.CLIENT_SESSION_SECRET_KEY;
 		if (secretKey == null)
-			return create ? new ClientSession() : null;
+			return create ? new JSONClientSession() : null;
 
 		// Decode the cookie value while checking for any alteration
 		byte[] bytes = decrypt(secretKey, cookie.value());
@@ -167,18 +191,18 @@ public class ClientSession implements Session {
 		long now = System.currentTimeMillis();
 		boolean expired = maxInactiveInterval > 0 && (now - lastAccessedTime) > maxInactiveInterval * 1000;
 		if (expired)
-			return new ClientSession();
+			return new JSONClientSession();
 
 		// Restore session, update "lastAccessedTime" and keep current "maxInactiveInterval"
 		String id = o.get("id").getAsString();
 		long creationTime = o.get("creationTime").getAsLong();
 		JsonObject attributes = o.getAsJsonObject("attributes").getAsJsonObject();
-		ClientSession session = new ClientSession(id, creationTime, now, attributes);
+		JSONClientSession session = new JSONClientSession(id, creationTime, now, attributes);
 		session.maxInactiveInterval(maxInactiveInterval);
 		return session;
 	}
 
-	protected static void save(ClientSession session, ServletResponse response) {
+	protected static void save(JSONClientSession session, ServletResponse response) {
 		// Skip saving if no client-session is used
 		if (session == null)
 			return;
@@ -193,13 +217,13 @@ public class ClientSession implements Session {
 		String json = o.toString();
 
 		// Get (or create) secret key for client session encryption
-		byte[] secretKey = ClientSession.CLIENT_SESSION_SECRET_KEY;
+		byte[] secretKey = JSONClientSession.CLIENT_SESSION_SECRET_KEY;
 		if (secretKey == null) {
-			synchronized (ClientSession.class) {
-				if (ClientSession.CLIENT_SESSION_SECRET_KEY == null) {
-					ClientSession.CLIENT_SESSION_SECRET_KEY = generateAES256SecretKey();
-					System.out.println("Generated new secret key " + Utils.bytes2hex(ClientSession.CLIENT_SESSION_SECRET_KEY));
-					secretKey = ClientSession.CLIENT_SESSION_SECRET_KEY;
+			synchronized (JSONClientSession.class) {
+				if (JSONClientSession.CLIENT_SESSION_SECRET_KEY == null) {
+					JSONClientSession.CLIENT_SESSION_SECRET_KEY = generateAES256SecretKey();
+					System.out.println("Generated new secret key " + Utils.bytes2hex(JSONClientSession.CLIENT_SESSION_SECRET_KEY));
+					secretKey = JSONClientSession.CLIENT_SESSION_SECRET_KEY;
 				}
 			}
 		}

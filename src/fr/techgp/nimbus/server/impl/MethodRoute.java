@@ -29,6 +29,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
+import fr.techgp.nimbus.server.ClientSession;
 import fr.techgp.nimbus.server.Cookie;
 import fr.techgp.nimbus.server.Matcher;
 import fr.techgp.nimbus.server.Render;
@@ -216,7 +217,11 @@ public class MethodRoute implements Route {
 		if (Session.class.equals(type))
 			return (req, res, name) -> req.session(true);
 		if (isParameterized(type, Optional.class, Session.class))
-			return (req, res, name) -> Optional.ofNullable(req.session(true));
+			return (req, res, name) -> Optional.ofNullable(req.session(false));
+		if (ClientSession.class.equals(type))
+			return (req, res, name) -> req.clientSession(true);
+		if (isParameterized(type, Optional.class, ClientSession.class))
+			return (req, res, name) -> Optional.ofNullable(req.clientSession(false));
 
 		// Try to build an extractor for Class
 		if (type instanceof Class<?>) {

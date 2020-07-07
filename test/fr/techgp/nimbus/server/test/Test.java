@@ -13,9 +13,9 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import fr.techgp.nimbus.server.ClientSession;
 import fr.techgp.nimbus.server.Cookie;
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Request;
@@ -24,7 +24,7 @@ import fr.techgp.nimbus.server.Router;
 import fr.techgp.nimbus.server.Session;
 import fr.techgp.nimbus.server.Upload;
 import fr.techgp.nimbus.server.Utils;
-import fr.techgp.nimbus.server.impl.ClientSession;
+import fr.techgp.nimbus.server.impl.JSONClientSession;
 import fr.techgp.nimbus.server.impl.JettyServer;
 import fr.techgp.nimbus.server.impl.MethodRoute;
 
@@ -105,6 +105,7 @@ public class Test {
 
 	public static Render reflect(Request request, Response response, Upload upload, Upload[] uploads,
 			Cookie cookie, Cookie[] cookies, Session session, Optional<Session> optionalSession,
+			ClientSession clientSession, Optional<ClientSession> optionalClientSession,
 			String stringValue, Integer integerValue, int intValue, Optional<Integer> optionalInteger,
 			Integer[] integerValues, int[] intValues, List<Integer> collection, EnumTest enumValue) {
 		assertThat(request != null);
@@ -115,6 +116,8 @@ public class Test {
 		assertThat(cookies.length == 0);
 		assertThat(session != null);
 		assertThat(optionalSession != null && optionalSession.isPresent());
+		assertThat(clientSession != null);
+		assertThat(optionalClientSession != null && optionalClientSession.isPresent());
 		assertThat("abc".equals(stringValue));
 		assertThat(null == integerValue);
 		assertThat(42 == intValue);
@@ -166,12 +169,11 @@ public class Test {
 			r.get("/reflect3", MethodRoute.to(new ReflectTest(), "run"));
 			r.get("/session", (req, res) -> {
 				try {
-					Session currentSession = req.clientSession(false);
-					JsonElement currentElement = currentSession == null ? null : currentSession.attribute("value");
-					String currentValue = currentElement == null ? null : currentElement.getAsString();
-					Session updatedSession = req.clientSession();
+					ClientSession currentSession = req.clientSession(false);
+					String currentValue = currentSession == null ? null : currentSession.stringAttribute("value");
+					ClientSession updatedSession = req.clientSession();
 					updatedSession.maxInactiveInterval(2);
-					updatedSession.attribute("value", req.queryParameter("value"));
+					updatedSession.stringAttribute("value", req.queryParameter("value"));
 					return Render.string(currentValue == null ? "" : currentValue);
 				} catch (RuntimeException ex) {
 					ex.printStackTrace();
@@ -205,13 +207,13 @@ public class Test {
 	}
 
 	private static final void runClientSessionEncryptionTests() {
-		byte[] key = ClientSession.generateAES256SecretKey();
+		byte[] key = JSONClientSession.generateAES256SecretKey();
 		char[] ascii = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~".toCharArray();
 
 		String input = Utils.randomAscii(new Random(), 256, true, true, true, ascii);
 		byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
-		String message = ClientSession.encrypt(key, inputBytes);
-		byte[] outputBytes = ClientSession.decrypt(key, message);
+		String message = JSONClientSession.encrypt(key, inputBytes);
+		byte[] outputBytes = JSONClientSession.decrypt(key, message);
 		String output = new String(outputBytes, StandardCharsets.UTF_8);
 
 		assertThat(input.equals(output));
@@ -249,7 +251,7 @@ public class Test {
 		get("/reflect2?" + p).length(2).body("OK").run();
 		get("/reflect3?" + p).length(3).body("abc").run();
 		// Check client session
-		ClientSession.CLIENT_SESSION_SECRET_KEY = Utils.hex2bytes("ce26b4bb1dc61766fbe866eb5550ab81cc8f48e81dd9a73b98cacb2c66c3e3c0");
+		JSONClientSession.CLIENT_SESSION_SECRET_KEY = Utils.hex2bytes("ce26b4bb1dc61766fbe866eb5550ab81cc8f48e81dd9a73b98cacb2c66c3e3c0");
 		get("/session?value=toto").cookie(false, true).length(0).run(); // new cookie, nothing in session, store toto
 		get("/session?value=titi").cookie(true, true).length(4).body("toto").run(); // send cookie, get toto, store titi
 		get("/session?value=tutu").cookie(true, true).length(4).body("titi").run(); // send cookie, get titi, store tutu

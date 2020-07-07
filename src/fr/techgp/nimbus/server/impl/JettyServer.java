@@ -5,9 +5,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
+import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
@@ -91,7 +93,7 @@ public class JettyServer {
 			ServletResponse res = new ServletResponse(response);
 			this.router.process(req, res);
 			// Save client session, if any
-			ClientSession.save(req.clientSession(false), res);
+			JSONClientSession.save(req.clientSession(false), res);
 			try {
 				// Write response
 				res.body().render(req, res, StandardCharsets.UTF_8, () -> {
@@ -156,8 +158,14 @@ public class JettyServer {
 
 		// Add handler
 		JettyRouterHandler handler = new JettyRouterHandler(router, multipart);
-		handler.getSessionCookieConfig().setHttpOnly(true);
 		server.setHandler(handler);
+
+		// Configure session management
+		// https://www.eclipse.org/jetty/documentation/9.2.22.v20170531/session-management.html
+		handler.setSessionTrackingModes(Set.of(SessionTrackingMode.COOKIE));
+		handler.setSessionCookie("nimbus-server-session");
+		handler.getSessionCookieConfig().setHttpOnly(true);
+		handler.getSessionCookieConfig().setSecure(true);
 
 		// Start
 		server.start();
