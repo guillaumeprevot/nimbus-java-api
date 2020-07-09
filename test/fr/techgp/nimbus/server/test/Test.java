@@ -15,13 +15,13 @@ import java.util.function.Consumer;
 
 import com.google.gson.JsonObject;
 
-import fr.techgp.nimbus.server.ClientSession;
 import fr.techgp.nimbus.server.Cookie;
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Request;
 import fr.techgp.nimbus.server.Response;
 import fr.techgp.nimbus.server.Router;
-import fr.techgp.nimbus.server.Session;
+import fr.techgp.nimbus.server.Session.ClientSession;
+import fr.techgp.nimbus.server.Session.ServerSession;
 import fr.techgp.nimbus.server.Upload;
 import fr.techgp.nimbus.server.Utils;
 import fr.techgp.nimbus.server.impl.JSONClientSession;
@@ -104,7 +104,8 @@ public class Test {
 	public static void assertThat(boolean test) { if (!test) throw new AssertionError(); }
 
 	public static Render reflect(Request request, Response response, Upload upload, Upload[] uploads,
-			Cookie cookie, Cookie[] cookies, Session session, Optional<Session> optionalSession,
+			Cookie cookie, Cookie[] cookies,
+			ServerSession session, Optional<ServerSession> optionalSession,
 			ClientSession clientSession, Optional<ClientSession> optionalClientSession,
 			String stringValue, Integer integerValue, int intValue, Optional<Integer> optionalInteger,
 			Integer[] integerValues, int[] intValues, List<Integer> collection, EnumTest enumValue) {

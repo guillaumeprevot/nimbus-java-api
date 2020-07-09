@@ -2,9 +2,9 @@ package fr.techgp.nimbus.server.impl;
 
 import javax.servlet.http.HttpSession;
 
-import fr.techgp.nimbus.server.Session;
+import fr.techgp.nimbus.server.Session.ServerSession;
 
-public class ServletSession implements Session {
+public class ServletSession implements ServerSession {
 
 	private final ServletRequest request;
 	private final HttpSession session;
@@ -46,6 +46,36 @@ public class ServletSession implements Session {
 
 	@Override
 	public void attribute(String name, Object value) {
+		this.session.setAttribute(name, value);
+	}
+
+	@Override
+	public String stringAttribute(String name) {
+		return (String) this.session.getAttribute(name);
+	}
+
+	@Override
+	public void stringAttribute(String name, String value) {
+		this.session.setAttribute(name, value);
+	}
+
+	@Override
+	public Boolean booleanAttribute(String name) {
+		return (Boolean) this.session.getAttribute(name);
+	}
+
+	@Override
+	public void booleanAttribute(String name, Boolean value) {
+		this.session.setAttribute(name, value);
+	}
+
+	@Override
+	public Number numberAttribute(String name) {
+		return (Number) this.session.getAttribute(name);
+	}
+
+	@Override
+	public void numberAttribute(String name, Number value) {
 		this.session.setAttribute(name, value);
 	}
 

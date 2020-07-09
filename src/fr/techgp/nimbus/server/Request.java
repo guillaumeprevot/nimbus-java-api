@@ -7,6 +7,9 @@ import java.util.function.Function;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import fr.techgp.nimbus.server.Session.ClientSession;
+import fr.techgp.nimbus.server.Session.ServerSession;
+
 /**
  * This interface represents the incoming request.
  *
@@ -107,9 +110,9 @@ public interface Request {
 	public List<? extends Upload> uploads();
 
 	/** returns the current {@link Session} associated with this request, or if the request does not have a session, creates one */
-	public Session session();
+	public ServerSession session();
 	/** returns the current {@link Session} associated with this request, or if there is no current session and create is true, returns a new session */
-	public Session session(boolean create);
+	public ServerSession session(boolean create);
 
 	/** returns the current client {@link Session} associated with this request, or if the request does not have a session, creates one */
 	public ClientSession clientSession();

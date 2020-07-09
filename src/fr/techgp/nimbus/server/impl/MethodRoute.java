@@ -29,14 +29,14 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
-import fr.techgp.nimbus.server.ClientSession;
 import fr.techgp.nimbus.server.Cookie;
 import fr.techgp.nimbus.server.Matcher;
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Request;
 import fr.techgp.nimbus.server.Response;
 import fr.techgp.nimbus.server.Route;
-import fr.techgp.nimbus.server.Session;
+import fr.techgp.nimbus.server.Session.ClientSession;
+import fr.techgp.nimbus.server.Session.ServerSession;
 import fr.techgp.nimbus.server.Upload;
 import fr.techgp.nimbus.server.Utils;
 
@@ -214,9 +214,9 @@ public class MethodRoute implements Route {
 			return (req, res, name) -> req.cookie(name);
 		if (Cookie[].class.equals(type))
 			return (req, res, name) -> req.cookies().toArray(new Cookie[0]);
-		if (Session.class.equals(type))
+		if (ServerSession.class.equals(type))
 			return (req, res, name) -> req.session(true);
-		if (isParameterized(type, Optional.class, Session.class))
+		if (isParameterized(type, Optional.class, ServerSession.class))
 			return (req, res, name) -> Optional.ofNullable(req.session(false));
 		if (ClientSession.class.equals(type))
 			return (req, res, name) -> req.clientSession(true);

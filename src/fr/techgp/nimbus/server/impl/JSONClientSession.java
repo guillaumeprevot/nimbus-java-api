@@ -25,7 +25,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
-import fr.techgp.nimbus.server.ClientSession;
+import fr.techgp.nimbus.server.Session.ClientSession;
 import fr.techgp.nimbus.server.Utils;
 
 /**
