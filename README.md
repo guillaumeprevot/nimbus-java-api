@@ -72,3 +72,4 @@ static.1.prefix=/public2
 - 2020-05-31 : add reusable MIME type manager
 - 2020-06-07 : add route implementation using Java "reflection"
 - 2020-07-05 : add client session support
+- 2020-07-09 : add reusable "utils" package

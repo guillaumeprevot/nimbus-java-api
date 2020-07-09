@@ -10,8 +10,13 @@ public final class IOUtils {
 		//
 	}
 
-	/** writes an {@link InputStream} to an {@link OutputStream} using a 1MB buffer */
-	public static final void copy(InputStream is, OutputStream os) throws IOException {
+	/**
+	 * Cette méthode copie un {@link InputStream} dans un {@link OutputStream} en utilisant un buffer de 1Mo.
+	 *
+	 * @param is le flux contenant les données à copier
+	 * @param os le flux vers lequel copier les données
+	 */
+	public static final void copy(final InputStream is, final OutputStream os) throws IOException {
 		int n;
 		byte[] buffer = new byte[1024 * 1024];
 		while ((n = is.read(buffer)) != -1) {

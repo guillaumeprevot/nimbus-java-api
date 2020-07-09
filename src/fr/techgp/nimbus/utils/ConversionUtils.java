@@ -8,7 +8,12 @@ public final class ConversionUtils {
 		//
 	}
 
-	/** converts an hexadecimal String to an array of byte */
+	/**
+	 * Cette méthode convertit une chaine de caractères hexadécimaux en un tableau d'octets.
+	 *
+	 * @param hex une chaine de caractères hexadécimaux
+	 * @return l'équivalent sous la forme d'un tableau d'octets
+	 */
 	public static final byte[] hex2bytes(final String hex) {
 		final int len = hex.length();
 		if ((len & 0x01) != 0)
@@ -20,7 +25,12 @@ public final class ConversionUtils {
 		return result;
 	}
 
-	/** converts an array of byte to an hexadecimal String */
+	/**
+	 * Cette méthode convertit un tableau d'octets en une chaine de caractères hexadécimaux.
+	 *
+	 * @param bytes un tableau d'octets
+	 * @return l'équivalent sous la forme d'une chaine de caractères hexadécimaux
+	 */
 	public static final String bytes2hex(final byte[] bytes) {
 		final int len = bytes.length;
 		final char[] chars = new char[len << 1];
@@ -31,7 +41,12 @@ public final class ConversionUtils {
 		return new String(chars);
 	}
 
-	/** converts a long value to an array of 8 bytes */
+	/**
+	 * Cette méthode convertit un entier long en un tableau de 8 octets.
+	 *
+	 * @param value un entier long
+	 * @return l'équivalent sous la forme d'un tableau de 8 octets
+	 */
 	public static final byte[] long2bytes(long value) {
 		byte[] result = new byte[Long.BYTES];
 		for (int i = 0; i < Long.BYTES; i++) {
@@ -40,7 +55,12 @@ public final class ConversionUtils {
 		return result;
 	}
 
-	/** converts an array of 8 bytes to a long value */
+	/**
+	 * Cette méthode convertit un tableau de 8 octets en un entier long.
+	 *
+	 * @param value un tableau de 8 octets
+	 * @return l'entier long équivalent
+	 */
 	public static final long bytes2long(byte[] value) {
 		long result = 0;
 		for (int i = 0; i < Long.BYTES; i++) {
