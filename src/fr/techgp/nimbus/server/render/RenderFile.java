@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Request;
 import fr.techgp.nimbus.server.Response;
-import fr.techgp.nimbus.server.Utils;
+import fr.techgp.nimbus.utils.IOUtils;
 
 public class RenderFile implements Render {
 
@@ -51,7 +51,7 @@ public class RenderFile implements Render {
 		try (OutputStream os = stream.get()) {
 			if (this.file.exists()) {
 				try (InputStream is = new FileInputStream(this.file)) {
-					Utils.copy(is, os);
+					IOUtils.copy(is, os);
 				} finally {
 					if (this.deleteAfter)
 						this.file.delete();

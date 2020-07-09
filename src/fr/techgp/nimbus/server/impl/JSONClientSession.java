@@ -26,7 +26,8 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import fr.techgp.nimbus.server.Session.ClientSession;
-import fr.techgp.nimbus.server.Utils;
+import fr.techgp.nimbus.utils.ConversionUtils;
+import fr.techgp.nimbus.utils.RandomUtils;
 
 /**
  * Implementation of a session securely stored in a cookie on the client side.
@@ -156,7 +157,7 @@ public class JSONClientSession implements ClientSession {
 	}
 
 	protected void initDefaults() {
-		this.id = Utils.randomAscii(RANDOM, 32, true, true, true, null);
+		this.id = RandomUtils.randomAscii(RANDOM, 32, true, true, true, null);
 		this.creationTime = System.currentTimeMillis();
 		this.lastAccessedTime = this.creationTime;
 		this.isNew = true;
@@ -222,7 +223,7 @@ public class JSONClientSession implements ClientSession {
 			synchronized (JSONClientSession.class) {
 				if (JSONClientSession.CLIENT_SESSION_SECRET_KEY == null) {
 					JSONClientSession.CLIENT_SESSION_SECRET_KEY = generateAES256SecretKey();
-					System.out.println("Generated new secret key " + Utils.bytes2hex(JSONClientSession.CLIENT_SESSION_SECRET_KEY));
+					System.out.println("Generated new secret key " + ConversionUtils.bytes2hex(JSONClientSession.CLIENT_SESSION_SECRET_KEY));
 					secretKey = JSONClientSession.CLIENT_SESSION_SECRET_KEY;
 				}
 			}
@@ -241,12 +242,11 @@ public class JSONClientSession implements ClientSession {
 	public static final String encrypt(byte[] key, byte[] data) {
 		try {
 			// Generate random IV as byte array
-			byte[] iv = new byte[16];
-			RANDOM.nextBytes(iv);
+			byte[] iv = RandomUtils.randomBytes(RANDOM, 16);
 
 			// Generate timestamp as byte array
 			long timestamp = System.currentTimeMillis();
-			byte[] timestampBytes = Utils.long2bytes(timestamp);
+			byte[] timestampBytes = ConversionUtils.long2bytes(timestamp);
 
 			// Encrypt data as AES/CBC(secretKey, random IV, compress(data))
 			SecretKeySpec aesKeySpec = new SecretKeySpec(key, "AES");
@@ -265,10 +265,10 @@ public class JSONClientSession implements ClientSession {
 			byte[] signature = mac.doFinal();
 
 			// Renvoyer la valeur du cookie
-			return Utils.bytes2hex(signature)
-					+ "|" + Utils.bytes2hex(iv)
-					+ "|" + Utils.bytes2hex(timestampBytes)
-					+ "|" + Utils.bytes2hex(encryptedData);
+			return ConversionUtils.bytes2hex(signature)
+					+ "|" + ConversionUtils.bytes2hex(iv)
+					+ "|" + ConversionUtils.bytes2hex(timestampBytes)
+					+ "|" + ConversionUtils.bytes2hex(encryptedData);
 		} catch (Exception ex) {
 			throw new RuntimeException("Expected algorithm is not supported", ex);
 		}
@@ -280,10 +280,10 @@ public class JSONClientSession implements ClientSession {
 			String[] parts = value.split("\\|");
 			if (parts.length != 4)
 				throw new InvalidParameterException("Value is expected to be signature|iv|timestamp|data");
-			byte[] signature = Utils.hex2bytes(parts[0]);
-			byte[] iv = Utils.hex2bytes(parts[1]);
-			byte[] timestampBytes = Utils.hex2bytes(parts[2]);
-			byte[] encryptedData = Utils.hex2bytes(parts[3]);
+			byte[] signature = ConversionUtils.hex2bytes(parts[0]);
+			byte[] iv = ConversionUtils.hex2bytes(parts[1]);
+			byte[] timestampBytes = ConversionUtils.hex2bytes(parts[2]);
+			byte[] encryptedData = ConversionUtils.hex2bytes(parts[3]);
 
 			// Verify HMAC signature : HMAC(secretKey, iv | timestamp | encryptedData)
 			SecretKeySpec hmacKeySpec = new SecretKeySpec(key, "HmacSHA256");
@@ -324,7 +324,7 @@ public class JSONClientSession implements ClientSession {
 	public static final byte[] loadAES256SecretKey(String hex) {
 		if (hex.length() != 64)
 			throw new InvalidParameterException("AES key should be 256 bits (i.e. 32 bytes, i.e. 64 hexadecimal characters)");
-		return Utils.hex2bytes(hex);
+		return ConversionUtils.hex2bytes(hex);
 	}
 
 }

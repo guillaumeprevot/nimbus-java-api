@@ -37,7 +37,7 @@ public final class MimeTypes {
 	/** loads some file extension MIME types from default resource <i>/fr/techgp/nimbus/server/mimetypes.conf</i> */
 	public static final void loadDefaultMimeTypes() throws IOException {
 		synchronized (mimetypes) {
-			try (InputStream is = Utils.class.getResourceAsStream("mimetypes.properties")) {
+			try (InputStream is = MimeTypes.class.getResourceAsStream("mimetypes.properties")) {
 				Properties p = new Properties();
 				p.load(is);
 				for (String extension : p.stringPropertyNames()) {

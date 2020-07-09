@@ -38,7 +38,7 @@ import fr.techgp.nimbus.server.Route;
 import fr.techgp.nimbus.server.Session.ClientSession;
 import fr.techgp.nimbus.server.Session.ServerSession;
 import fr.techgp.nimbus.server.Upload;
-import fr.techgp.nimbus.server.Utils;
+import fr.techgp.nimbus.utils.IOUtils;
 
 public class MethodRoute implements Route {
 
@@ -325,7 +325,7 @@ public class MethodRoute implements Route {
 			if (u != null) {
 				try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 					try (InputStream is = u.getInputStream()) {
-						Utils.copy(is, os);
+						IOUtils.copy(is, os);
 						s = new String(os.toByteArray(), StandardCharsets.UTF_8);
 					}
 				} catch (IOException ex) {

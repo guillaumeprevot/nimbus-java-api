@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Request;
 import fr.techgp.nimbus.server.Response;
-import fr.techgp.nimbus.server.Utils;
+import fr.techgp.nimbus.utils.IOUtils;
 
 public class RenderStatic implements Render {
 
@@ -57,7 +57,7 @@ public class RenderStatic implements Render {
 				response.length(this.file.length());
 				try (InputStream is = new FileInputStream(this.file)) {
 					try (OutputStream os = stream.get()) {
-						Utils.copy(is, os);
+						IOUtils.copy(is, os);
 						return;
 					}
 				}

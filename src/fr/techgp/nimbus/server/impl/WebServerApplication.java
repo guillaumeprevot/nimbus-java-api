@@ -34,6 +34,7 @@ import fr.techgp.nimbus.server.Response;
 import fr.techgp.nimbus.server.Route;
 import fr.techgp.nimbus.server.Router;
 import fr.techgp.nimbus.server.Utils;
+import fr.techgp.nimbus.utils.IOUtils;
 
 public class WebServerApplication {
 
@@ -258,7 +259,7 @@ public class WebServerApplication {
 							if (logger.isInfoEnabled())
 								logger.info("[iblocklist] Adding " + url + "...");
 							try (InputStream is = new GZIPInputStream(new URL(url).openStream())) {
-								Utils.copy(is, os);
+								IOUtils.copy(is, os);
 							}
 						}
 						this.refreshTime = System.currentTimeMillis();
