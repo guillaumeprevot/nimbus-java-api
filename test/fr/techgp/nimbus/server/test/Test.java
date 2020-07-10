@@ -1,7 +1,5 @@
 package fr.techgp.nimbus.server.test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -11,11 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
-import java.util.function.Consumer;
 
 import com.google.gson.JsonObject;
 
 import fr.techgp.nimbus.server.Cookie;
+import fr.techgp.nimbus.server.MimeTypes;
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Request;
 import fr.techgp.nimbus.server.Response;
@@ -27,9 +25,11 @@ import fr.techgp.nimbus.server.impl.JSONClientSession;
 import fr.techgp.nimbus.server.impl.JettyServer;
 import fr.techgp.nimbus.server.impl.MethodRoute;
 import fr.techgp.nimbus.utils.ConversionUtils;
+import fr.techgp.nimbus.utils.FunctionalUtils.ConsumerWithException;
 import fr.techgp.nimbus.utils.IOUtils;
 import fr.techgp.nimbus.utils.RandomUtils;
 import fr.techgp.nimbus.utils.StringUtils;
+import fr.techgp.nimbus.utils.WebUtils.MultiPartAdapter;
 
 public class Test {
 
@@ -38,7 +38,7 @@ public class Test {
 
 	private final String request;
 	private String method = "GET";
-	private Consumer<HttpURLConnection> customizer;
+	private ConsumerWithException<HttpURLConnection, Exception> customizer;
 	private int status = 200;
 	private String mimetype = "text/html;charset=utf-8";
 	private int length = -1;
@@ -55,7 +55,7 @@ public class Test {
 	}
 
 	public Test method(String method) { this.method = method; return this; }
-	public Test customize(Consumer<HttpURLConnection> customizer) { this.customizer = customizer; return this; }
+	public Test customize(ConsumerWithException<HttpURLConnection, Exception> customizer) { this.customizer = customizer; return this; }
 	public Test status(int status) { this.status = status; return this; }
 	public Test mimetype(String mimetype) { this.mimetype = mimetype; return this; }
 	public Test length(int length) { this.length = length; return this; }
@@ -79,8 +79,12 @@ public class Test {
 			throw new Exception("Mauvais type " + connection.getContentType());
 		if (this.length != -1 && this.length != connection.getContentLength())
 			throw new Exception("Mauvais longueur " + connection.getContentLength());
-		if (this.status < 400 && this.body != null && !this.body.equals(toString(connection)))
-			throw new Exception("Mauvais contenu " + connection.getContent());
+		if (this.status < 400 && this.body != null) {
+			try (InputStream is = connection.getInputStream()) {
+				if (!this.body.equals(IOUtils.toStringUTF8(is)))
+					throw new Exception("Mauvais contenu " + connection.getContent());
+			}
+		}
 		if (this.before1 && !"Before1".equals(connection.getHeaderField("Before1")))
 			throw new Exception("Mauvais Before1 " + connection.getHeaderField("Before1"));
 		if (this.before2 && !"Before2".equals(connection.getHeaderField("Before2")))
@@ -168,6 +172,11 @@ public class Test {
 			r.get("/redirect", (req, res) -> Render.redirect("/hello"));
 			r.redirect("/redirect2", "/redirect");
 			r.get("/samepage", (req, res) -> Render.samePage());
+			r.post("/upload", (req, res) -> {
+				String name = req.upload("name").asString();
+				String content = req.upload("file").asString();
+				return Render.string(name + "/" + req.uploads("file").get(0).fileName() + "/" + content);
+			});
 			r.get("/reflect", MethodRoute.to(Test.class, "reflect"));
 			r.get("/reflect2", MethodRoute.to("fr.techgp.nimbus.server.test.Test.reflect"));
 			r.get("/reflect3", MethodRoute.to(new ReflectTest(), "run"));
@@ -188,6 +197,7 @@ public class Test {
 			r.after("/*", (req, res) -> { res.header("After1", "After1"); return null; });
 
 			JettyServer s = new JettyServer(PORT);
+			s.multipart(null/* or System.getProperty("java.io.tmpdir")*/, Integer.MAX_VALUE, Long.MAX_VALUE, 10);
 			s.start(r);
 
 			try {
@@ -199,14 +209,6 @@ public class Test {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-		}
-	}
-
-	private static final String toString(HttpURLConnection connection) throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try (InputStream is = connection.getInputStream()) {
-			IOUtils.copy(is, baos);
-			return new String(baos.toByteArray(), StandardCharsets.UTF_8);
 		}
 	}
 
@@ -227,7 +229,7 @@ public class Test {
 		// No matching routes should return 404 Not Found
 		get("/notfound").status(404).run();
 		// Server side error should return 500 Internal Server Error with stack trace as text/plain and skipping "after" filters
-		get("/error").status(500).mimetype("text/plain").filters(true, false, false).run();
+		get("/error").status(500).mimetype(MimeTypes.TEXT).filters(true, false, false).run();
 		// Matching empty route return an empty body
 		get("/empty").body("").run();
 		// Calling "hello" should return the 5-bytes "world" text and should match all three filters
@@ -235,11 +237,11 @@ public class Test {
 		// Calling valid path "/bytes" but with wrong method should return 404 Not Found
 		post("/bytes").status(404).length("Not Found".length()).run();
 		// Calling valid path "/bytes" with valid method should return "bytes" as application/octet-stream and inline file attachment
-		get("/bytes").body("bytes").mimetype("application/octet-stream").header("Content-Disposition", "inline; filename=\"data.bin\"").run();
+		get("/bytes").body("bytes").mimetype(MimeTypes.BINARY).header("Content-Disposition", "inline; filename=\"data.bin\"").run();
 		// Calling a route without method restriction should be "OK" with "PUT" method
 		new Test("/anymethod").method("PUT").body("OK").run();
 		// Checking JSON response
-		post("/json?name=aaa&id=12").mimetype("application/json").body("{\"name\":\"aaa\",\"id\":12}").run();
+		post("/json?name=aaa&id=12").mimetype(MimeTypes.JSON).body("{\"name\":\"aaa\",\"id\":12}").run();
 		// Checking redirection from "/redirect" to "/world"
 		get("/redirect").length(5).body("world").filters(true, true, true).run();
 		// Checking helper method Router.redirect
@@ -247,7 +249,14 @@ public class Test {
 		// Checking SamePage, using a Referer simulating a current "/hello" page
 		get("/samepage").customize(c -> c.addRequestProperty("Referer", "/hello")).length(5).body("world").filters(true, true, true).run();
 		// Checking SamePage, using a Referer simulating a current "/bytes" page
-		get("/samepage").customize(c -> c.addRequestProperty("Referer", "/bytes")).length(5).body("bytes").mimetype("application/octet-stream").filters(true, false, true).run();
+		get("/samepage").customize(c -> c.addRequestProperty("Referer", "/bytes")).length(5).body("bytes").mimetype(MimeTypes.BINARY).filters(true, false, true).run();
+		// Cheking uploads
+		post("/upload").customize(c -> {
+			try (MultiPartAdapter adapter = new MultiPartAdapter(c, "******")) {
+				adapter.addFormField("name", "toto");
+				adapter.addFileUpload("file", "tata.txt", "tutu".getBytes(StandardCharsets.UTF_8));
+			}
+		}).length(18).body("toto/tata.txt/tutu").run();
 		// Checking custom route using Java reflection to inject parameters
 		String p = "intValue=42&stringValue=abc&integerValues=1&integerValues=&integerValues=2&intValues=1&intValues=2"
 				+ "&collection=1&collection=&collection=2&enumValue=Something";

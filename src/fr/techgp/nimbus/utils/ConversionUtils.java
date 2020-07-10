@@ -47,7 +47,7 @@ public final class ConversionUtils {
 	 * @param value un entier long
 	 * @return l'équivalent sous la forme d'un tableau de 8 octets
 	 */
-	public static final byte[] long2bytes(long value) {
+	public static final byte[] long2bytes(final long value) {
 		byte[] result = new byte[Long.BYTES];
 		for (int i = 0; i < Long.BYTES; i++) {
 			result[Long.BYTES - 1 - i] = (byte) (value >> (8 * i));
@@ -61,7 +61,7 @@ public final class ConversionUtils {
 	 * @param value un tableau de 8 octets
 	 * @return l'entier long équivalent
 	 */
-	public static final long bytes2long(byte[] value) {
+	public static final long bytes2long(final byte[] value) {
 		long result = 0;
 		for (int i = 0; i < Long.BYTES; i++) {
 			result <<= 8;

@@ -1,6 +1,5 @@
 package fr.techgp.nimbus.server.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -12,7 +11,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -323,11 +321,8 @@ public class MethodRoute implements Route {
 		if (s == null) {
 			Upload u = request.upload(name);
 			if (u != null) {
-				try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-					try (InputStream is = u.getInputStream()) {
-						IOUtils.copy(is, os);
-						s = new String(os.toByteArray(), StandardCharsets.UTF_8);
-					}
+				try (InputStream is = u.getInputStream()) {
+					s = IOUtils.toStringUTF8(is);
 				} catch (IOException ex) {
 					throw new RuntimeException(ex);
 				}

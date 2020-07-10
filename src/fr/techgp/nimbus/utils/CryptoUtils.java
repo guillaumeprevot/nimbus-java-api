@@ -209,7 +209,7 @@ public final class CryptoUtils {
 	 * @param value une chaine de caractères considérée comme UTF-8
 	 * @return la somme de hachage SHA-1 de la chaine donnée au format hexadécimal
 	 */
-	public static final String sha1Hex(String value) {
+	public static final String sha1Hex(final String value) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-1");
 			digest.update(value.getBytes(StandardCharsets.UTF_8));

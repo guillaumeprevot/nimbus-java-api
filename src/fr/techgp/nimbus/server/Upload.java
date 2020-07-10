@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import fr.techgp.nimbus.utils.IOUtils;
+
 public interface Upload {
 
 	/** returns the input's name in the HTML form */
@@ -29,5 +31,11 @@ public interface Upload {
 
 	/** deletes the underlying storage for a file item, including deleting any associated temporary disk file */
 	public void delete() throws IOException;
+
+	default String asString() throws IOException {
+		try (InputStream is = this.getInputStream()) {
+			return IOUtils.toStringUTF8(is);
+		}
+	}
 
 }
