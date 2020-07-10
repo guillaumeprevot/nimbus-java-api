@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -164,9 +165,10 @@ public final class CryptoUtils {
 	 *
 	 * @param testedPassword le mot de passe à tester
 	 * @param storedPassword un hash de la forme iterations + ":" + hex(salt) + ":" + hex(PBKDF2WithHmacSHA1(password, salt, iterations))
+	 * @param errorHandler un gestionnaire pour des erreurs inattendues (normalement, aucune ne devrait être lancée)
 	 * @return true si testedPassword est le bon mot de passe
 	 */
-	public static final boolean validatePassword(final String testedPassword, final String storedPassword) {
+	public static final boolean validatePassword(final String testedPassword, final String storedPassword, Consumer<Exception> errorHandler) {
 		try {
 			// Extraire les informations depuis le hash donnée, de la forme "iterations:saltHex:hashHex"
 			String[] parts = storedPassword.split(":");
@@ -182,8 +184,13 @@ public final class CryptoUtils {
 			// Comparer les 2 hash en temps constant
 			return slowEquals(hash, testedHash);
 		} catch (Exception ex) {
-			System.err.println(ex.getClass().getName() + " : " + ex.getMessage());
-			//ex.printStackTrace();
+			if (errorHandler != null)
+				// Prévenir de l'erreur
+				errorHandler.accept(ex);
+			else
+				// Ou tracer l'erreur
+				System.err.println(ex.getClass().getName() + " : " + ex.getMessage());
+			// Rejeter les mots de passe en attendant d'en savoir plus
 			return false;
 		}
 	}

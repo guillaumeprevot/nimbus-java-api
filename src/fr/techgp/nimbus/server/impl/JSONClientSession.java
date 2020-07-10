@@ -47,7 +47,7 @@ public class JSONClientSession implements ClientSession {
 	/** The source of randomness for session id and encryption */
 	private static final SecureRandom RANDOM = new SecureRandom();
 	/** The secret key to used for client session encryption */
-	public static byte[] CLIENT_SESSION_SECRET_KEY = null;
+	private static byte[] CLIENT_SESSION_SECRET_KEY = null;
 
 	private String id;
 	private long creationTime;
@@ -172,12 +172,18 @@ public class JSONClientSession implements ClientSession {
 			return create ? new JSONClientSession() : null;
 
 		// Load secret key
-		byte[] secretKey = JSONClientSession.CLIENT_SESSION_SECRET_KEY;
+		byte[] secretKey = CLIENT_SESSION_SECRET_KEY;
 		if (secretKey == null)
 			return create ? new JSONClientSession() : null;
 
 		// Decode the cookie value while checking for any alteration
-		byte[] bytes = decrypt(secretKey, cookie.value());
+		byte[] bytes;
+		try {
+			bytes = decrypt(secretKey, cookie.value());
+		} catch (InvalidParameterException ex) {
+			ex.printStackTrace();
+			return create ? new JSONClientSession() : null;
+		}
 		String json = new String(bytes, StandardCharsets.UTF_8);
 
 		// Parse cookie as JSON Object { id: String, creationTime: long, lastAccessedTime: long, maxInactiveInterval: int, attributes: map }
@@ -218,13 +224,13 @@ public class JSONClientSession implements ClientSession {
 		String json = o.toString();
 
 		// Get (or create) secret key for client session encryption
-		byte[] secretKey = JSONClientSession.CLIENT_SESSION_SECRET_KEY;
+		byte[] secretKey = CLIENT_SESSION_SECRET_KEY;
 		if (secretKey == null) {
 			synchronized (JSONClientSession.class) {
-				if (JSONClientSession.CLIENT_SESSION_SECRET_KEY == null) {
-					JSONClientSession.CLIENT_SESSION_SECRET_KEY = generateAES256SecretKey();
-					System.out.println("Generated new secret key " + ConversionUtils.bytes2hex(JSONClientSession.CLIENT_SESSION_SECRET_KEY));
-					secretKey = JSONClientSession.CLIENT_SESSION_SECRET_KEY;
+				if (CLIENT_SESSION_SECRET_KEY == null) {
+					CLIENT_SESSION_SECRET_KEY = generateAES256SecretKey();
+					System.out.println("Generated new secret key " + ConversionUtils.bytes2hex(CLIENT_SESSION_SECRET_KEY));
+					secretKey = CLIENT_SESSION_SECRET_KEY;
 				}
 			}
 		}
@@ -321,10 +327,10 @@ public class JSONClientSession implements ClientSession {
 		}
 	}
 
-	public static final byte[] loadAES256SecretKey(String hex) {
+	public static final void initAES256SecretKey(String hex) {
 		if (hex.length() != 64)
 			throw new InvalidParameterException("AES key should be 256 bits (i.e. 32 bytes, i.e. 64 hexadecimal characters)");
-		return ConversionUtils.hex2bytes(hex);
+		CLIENT_SESSION_SECRET_KEY = ConversionUtils.hex2bytes(hex);
 	}
 
 }

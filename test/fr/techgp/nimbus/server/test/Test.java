@@ -24,7 +24,6 @@ import fr.techgp.nimbus.server.Upload;
 import fr.techgp.nimbus.server.impl.JSONClientSession;
 import fr.techgp.nimbus.server.impl.JettyServer;
 import fr.techgp.nimbus.server.impl.MethodRoute;
-import fr.techgp.nimbus.utils.ConversionUtils;
 import fr.techgp.nimbus.utils.FunctionalUtils.ConsumerWithException;
 import fr.techgp.nimbus.utils.IOUtils;
 import fr.techgp.nimbus.utils.RandomUtils;
@@ -264,7 +263,7 @@ public class Test {
 		get("/reflect2?" + p).length(2).body("OK").run();
 		get("/reflect3?" + p).length(3).body("abc").run();
 		// Check client session
-		JSONClientSession.CLIENT_SESSION_SECRET_KEY = ConversionUtils.hex2bytes("ce26b4bb1dc61766fbe866eb5550ab81cc8f48e81dd9a73b98cacb2c66c3e3c0");
+		JSONClientSession.initAES256SecretKey("ce26b4bb1dc61766fbe866eb5550ab81cc8f48e81dd9a73b98cacb2c66c3e3c0");
 		get("/session?value=toto").cookie(false, true).length(0).run(); // new cookie, nothing in session, store toto
 		get("/session?value=titi").cookie(true, true).length(4).body("toto").run(); // send cookie, get toto, store titi
 		get("/session?value=tutu").cookie(true, true).length(4).body("titi").run(); // send cookie, get titi, store tutu
