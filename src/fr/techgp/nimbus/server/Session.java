@@ -1,7 +1,5 @@
 package fr.techgp.nimbus.server;
 
-import com.google.gson.JsonElement;
-
 public interface Session {
 
 	/** returns the unique identifier assigned to this session */
@@ -16,20 +14,11 @@ public interface Session {
 	/** returns true if the client does not yet know about the session or if the client chooses not to join the session */
 	public boolean isNew();
 
-	/** returns the String bound with the specified name, or null if no string is bound under the name yet */
-	public String stringAttribute(String name);
-	/** binds a String to this session, using the specified name */
-	public void stringAttribute(String name, String value);
+	/** returns the object bound with the specified name, or null if no object is bound under the name yet */
+	public <T> T attribute(String name);
 
-	/** returns the Boolean bound with the specified name, or null if no Boolean is bound under the name yet */
-	public Boolean booleanAttribute(String name);
-	/** binds a Boolean to this session, using the specified name */
-	public void booleanAttribute(String name, Boolean value);
-
-	/** returns the Number bound with the specified name, or null if no Number is bound under the name yet */
-	public Number numberAttribute(String name);
-	/** binds a Number to this session, using the specified name */
-	public void numberAttribute(String name, Number value);
+	/** binds an object to this session, using the specified name */
+	public void attribute(String name, Object value);
 
 	/** removes the object bound with the specified name from this session */
 	public void removeAttribute(String name);
@@ -43,26 +32,14 @@ public interface Session {
 	/** invalidates this session then unbinds any objects bound to it */
 	public void invalidate();
 
-	/** Server-side sessions can store any Java objects */
+	/** Marker interface for server-side sessions */
 	public static interface ServerSession extends Session {
-
-		/** returns the object bound with the specified name, or null if no object is bound under the name yet */
-		public <T> T attribute(String name);
-
-		/** binds an object to this session, using the specified name */
-		public void attribute(String name, Object value);
-
+		//
 	}
 
-	/** Client-side sessions can store any JSON supported value */
+	/** Marker interface for client-side sessions */
 	public static interface ClientSession extends Session {
-
-		/** returns the JSON element bound with the specified name, or null if no element is bound under the name yet */
-		public <T extends JsonElement> T attribute(String name);
-
-		/** binds a JSON element to this session, using the specified name */
-		public void attribute(String name, JsonElement value);
-
+		//
 	}
 
 }

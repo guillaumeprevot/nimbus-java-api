@@ -7,7 +7,6 @@ import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Optional;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -20,7 +19,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -42,7 +40,7 @@ public class JSONClientSession implements ClientSession {
 
 	/** The name of the cookie storing session on the client-side */
 	public static final String CLIENT_SESSION_COOKIE_NAME = "nimbus-client-session";
-	/** The default timeout for the client-side session, in minutes (see maxInactiveInterval) */
+	/** The default timeout for the client-side session, in seconds (see maxInactiveInterval) */
 	private static final int CLIENT_SESSION_DEFAULT_MAX_ACTIVE_INTERVAL = 60 * 60;
 	/** The source of randomness for session id and encryption */
 	private static final SecureRandom RANDOM = new SecureRandom();
@@ -91,49 +89,30 @@ public class JSONClientSession implements ClientSession {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T extends JsonElement> T attribute(String name) {
+	public <T> T attribute(String name) {
 		JsonElement e = this.attributes.get(name);
-		if (e instanceof JsonNull)
+		if (e == null || e.isJsonNull())
 			return null;
-		return (T) e;
+		JsonPrimitive p = e.getAsJsonPrimitive();
+		if (p.isBoolean())
+			return (T) Boolean.valueOf(p.getAsBoolean());
+		if (p.isString())
+			return (T) p.getAsString();
+		return (T) p.getAsNumber();
 	}
 
 	@Override
-	public void attribute(String name, JsonElement value) {
+	public void attribute(String name, Object value) {
 		if (value == null)
-			this.attributes.add(name, JsonNull.INSTANCE);
+			this.attributes.remove(name);
+		else if (value instanceof Boolean)
+			this.attributes.addProperty(name, (Boolean) value);
+		else if (value instanceof String)
+			this.attributes.addProperty(name, (String) value);
+		else if (value instanceof Number)
+			this.attributes.addProperty(name, (Number) value);
 		else
-			this.attributes.add(name, value);
-	}
-
-	@Override
-	public String stringAttribute(String name) {
-		return Optional.<JsonElement>ofNullable(attribute(name)).map(JsonElement::getAsString).orElse(null);
-	}
-
-	@Override
-	public void stringAttribute(String name, String value) {
-		this.attributes.add(name, value == null ? JsonNull.INSTANCE : new JsonPrimitive(value));
-	}
-
-	@Override
-	public Boolean booleanAttribute(String name) {
-		return Optional.<JsonElement>ofNullable(attribute(name)).map((e) -> Boolean.valueOf(e.getAsBoolean())).orElse(null);
-	}
-
-	@Override
-	public void booleanAttribute(String name, Boolean value) {
-		this.attributes.add(name, value == null ? JsonNull.INSTANCE : new JsonPrimitive(value));
-	}
-
-	@Override
-	public Number numberAttribute(String name) {
-		return Optional.<JsonElement>ofNullable(attribute(name)).map(JsonElement::getAsNumber).orElse(null);
-	}
-
-	@Override
-	public void numberAttribute(String name, Number value) {
-		this.attributes.add(name, value == null ? JsonNull.INSTANCE : new JsonPrimitive(value));
+			throw new UnsupportedOperationException("Unsupported attribute type " + value.getClass().getName() + " (only Boolean, String, Number are supported)");
 	}
 
 	@Override

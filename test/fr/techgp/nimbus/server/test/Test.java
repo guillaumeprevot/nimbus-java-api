@@ -18,6 +18,7 @@ import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Request;
 import fr.techgp.nimbus.server.Response;
 import fr.techgp.nimbus.server.Router;
+import fr.techgp.nimbus.server.Session;
 import fr.techgp.nimbus.server.Session.ClientSession;
 import fr.techgp.nimbus.server.Session.ServerSession;
 import fr.techgp.nimbus.server.Upload;
@@ -181,11 +182,12 @@ public class Test {
 			r.get("/reflect3", MethodRoute.to(new ReflectTest(), "run"));
 			r.get("/session", (req, res) -> {
 				try {
-					ClientSession currentSession = req.clientSession(false);
-					String currentValue = currentSession == null ? null : currentSession.stringAttribute("value");
-					ClientSession updatedSession = req.clientSession();
+					boolean client = req.queryParameterBoolean("client", true);
+					Session currentSession = client ? req.clientSession(false) : req.session(false);
+					String currentValue = currentSession == null ? null : currentSession.attribute("value");
+					Session updatedSession = client ? req.clientSession() : req.session();
 					updatedSession.maxInactiveInterval(2);
-					updatedSession.stringAttribute("value", req.queryParameter("value"));
+					updatedSession.attribute("value", req.queryParameter("value"));
 					return Render.string(currentValue == null ? "" : currentValue);
 				} catch (RuntimeException ex) {
 					ex.printStackTrace();
@@ -249,6 +251,7 @@ public class Test {
 		get("/samepage").customize(c -> c.addRequestProperty("Referer", "/hello")).length(5).body("world").filters(true, true, true).run();
 		// Checking SamePage, using a Referer simulating a current "/bytes" page
 		get("/samepage").customize(c -> c.addRequestProperty("Referer", "/bytes")).length(5).body("bytes").mimetype(MimeTypes.BINARY).filters(true, false, true).run();
+
 		// Cheking uploads
 		post("/upload").customize(c -> {
 			try (MultiPartAdapter adapter = new MultiPartAdapter(c, "******")) {
@@ -256,12 +259,14 @@ public class Test {
 				adapter.addFileUpload("file", "tata.txt", "tutu".getBytes(StandardCharsets.UTF_8));
 			}
 		}).length(18).body("toto/tata.txt/tutu").run();
+
 		// Checking custom route using Java reflection to inject parameters
 		String p = "intValue=42&stringValue=abc&integerValues=1&integerValues=&integerValues=2&intValues=1&intValues=2"
 				+ "&collection=1&collection=&collection=2&enumValue=Something";
 		get("/reflect?" + p).length(2).body("OK").run();
 		get("/reflect2?" + p).length(2).body("OK").run();
 		get("/reflect3?" + p).length(3).body("abc").run();
+
 		// Check client session
 		JSONClientSession.initAES256SecretKey("ce26b4bb1dc61766fbe866eb5550ab81cc8f48e81dd9a73b98cacb2c66c3e3c0");
 		get("/session?value=toto").cookie(false, true).length(0).run(); // new cookie, nothing in session, store toto
@@ -271,6 +276,16 @@ public class Test {
 		get("/session?value=tata").cookie(true, true).length(4).body("tata").run(); // send cookie, get tata, store tata
 		Thread.sleep(3000); // wait for session timeout
 		get("/session?value=tata").cookie(true, true).length(0).run(); // send cookie, expired session, no result
+
+		// Check server session
+		get("/session?client=false&value=toto").cookie(false, true).length(0).run(); // new cookie, nothing in session, store toto
+		get("/session?client=false&value=titi").cookie(true, false).length(4).body("toto").run(); // send cookie, get toto, store titi
+		get("/session?client=false&value=tutu").cookie(true, false).length(4).body("titi").run(); // send cookie, get titi, store tutu
+		get("/session?client=false&value=tata").cookie(false, true).length(0).run(); // don't send cookie, nothing in session, store tata
+		get("/session?client=false&value=tata").cookie(true, false).length(4).body("tata").run(); // send cookie, get tata, store tata
+		Thread.sleep(3000); // wait for session timeout
+		get("/session?client=false&value=tata").cookie(true, false).length(0).run(); // send cookie, expired session, no result
+
 		// to continue...
 	}
 }

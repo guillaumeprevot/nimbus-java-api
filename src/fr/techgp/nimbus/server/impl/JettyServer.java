@@ -163,9 +163,10 @@ public class JettyServer {
 		// Configure session management
 		// https://www.eclipse.org/jetty/documentation/9.2.22.v20170531/session-management.html
 		handler.setSessionTrackingModes(Set.of(SessionTrackingMode.COOKIE));
-		handler.setSessionCookie("nimbus-server-session");
-		handler.getSessionCookieConfig().setHttpOnly(true);
-		handler.getSessionCookieConfig().setSecure(true);
+		handler.getSessionCookieConfig().setName("nimbus-server-session"); // instead of JSESSIONID
+		handler.getSessionCookieConfig().setHttpOnly(true); // no usage in JavaScript
+		handler.getSessionCookieConfig().setSecure(keystore != null); // if HTTPS is enabled
+		handler.getSessionCookieConfig().setMaxAge(60 * 60); // 1h
 
 		// Start
 		server.start();

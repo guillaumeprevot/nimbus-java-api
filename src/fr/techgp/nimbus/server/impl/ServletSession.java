@@ -50,36 +50,6 @@ public class ServletSession implements ServerSession {
 	}
 
 	@Override
-	public String stringAttribute(String name) {
-		return (String) this.session.getAttribute(name);
-	}
-
-	@Override
-	public void stringAttribute(String name, String value) {
-		this.session.setAttribute(name, value);
-	}
-
-	@Override
-	public Boolean booleanAttribute(String name) {
-		return (Boolean) this.session.getAttribute(name);
-	}
-
-	@Override
-	public void booleanAttribute(String name, Boolean value) {
-		this.session.setAttribute(name, value);
-	}
-
-	@Override
-	public Number numberAttribute(String name) {
-		return (Number) this.session.getAttribute(name);
-	}
-
-	@Override
-	public void numberAttribute(String name, Number value) {
-		this.session.setAttribute(name, value);
-	}
-
-	@Override
 	public void removeAttribute(String name) {
 		this.session.removeAttribute(name);
 	}
