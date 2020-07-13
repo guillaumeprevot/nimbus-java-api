@@ -116,8 +116,10 @@ public class WebServerApplication {
 				router.get("/utils/moneyrates", new MoneyRates(settings));
 			if ("true".equals(settings.apply("utils.iblocklist.enabled", null)))
 				router.get("/utils/iblocklist", new IBlockList(settings));
+			if ("true".equals(settings.apply("utils.help.enabled", null)))
+				router.get("/utils/help", new Help(settings));
 
-			// Check that requested path are not insecure
+			// Check that requested path is safe
 			router.before("/*", (req, res) -> {
 				if (req.path().contains("..")) {
 					if (logger.isWarnEnabled())
@@ -127,7 +129,7 @@ public class WebServerApplication {
 				return null;
 			});
 
-			// Trace for requested URLs that do not exist in shared folders
+			// Trace for requested URLs that do not exist
 			router.after("/*", (req, res) -> {
 				if (res.body() == null && logger.isWarnEnabled())
 					logger.warn("[" + req.ip() + "] " + HttpServletResponse.SC_NOT_FOUND + " : " + req.path());
@@ -152,6 +154,48 @@ public class WebServerApplication {
 			if (logger.isErrorEnabled())
 				logger.error("Application stopped because of unexpected error.", ex);
 		}
+	}
+
+	private static final class Help implements Route {
+
+		private String content;
+
+		public Help(BiFunction<String, String, String> settings) {
+			StringBuilder sb = new StringBuilder();
+			int i = 0;
+			String folder = settings.apply("static." + i + ".folder", null);
+			if (folder != null) {
+				sb.append("Static folders :<ul>");
+				while (folder != null) {
+					String prefix = settings.apply("static." + i + ".prefix", "");
+					sb.append("<li>\"").append(prefix).append("\" : \"").append(folder).append("\"</li>");
+					i++;
+					folder = settings.apply("static." + i + ".folder", null);
+				}
+				sb.append("</ul>");
+			}
+
+			sb.append("<a href=\"/../is/forbidden\">/../is/forbidden</a> returns an error<br />");
+			if ("true".equals(settings.apply("utils.ping.enabled", null)))
+				sb.append("<a href=\"/utils/ping\">/utils/ping</a> returns \"pong\"<br />");
+			if ("true".equals(settings.apply("utils.ip.enabled", null)))
+				sb.append("<a href=\"/utils/ip\">/utils/ip</a> returns your IP address<br />");
+			if ("true".equals(settings.apply("utils.mimetype.enabled", null)))
+				sb.append("<a href=\"/utils/mimetype/png\">/utils/mimetype/png</a> returns \"image/png\"<br />");
+			if ("true".equals(settings.apply("utils.moneyrates.enabled", null)))
+				sb.append("<a href=\"/utils/moneyrates\">/utils/moneyrates</a> returns € currency conversion as JSON<br />");
+			if ("true".equals(settings.apply("utils.iblocklist.enabled", null)))
+				sb.append("<a href=\"/utils/iblocklist\">/utils/iblocklist</a> merges some iblocklist<br />");
+			if ("true".equals(settings.apply("utils.help.enabled", null)))
+				sb.append("<a href=\"/utils/help\">/utils/help</a> is this page<br />");
+			this.content = sb.toString();
+		}
+
+		@Override
+		public Render handle(Request request, Response response) {
+			return Render.string(this.content);
+		}
+
 	}
 
 	private static final class MimeType implements Route {

@@ -1,6 +1,6 @@
 # Nimbus Java API
 
-This project contains some reusable libraries originally build for one of my projects called `Nimbus`.
+This project contains some reusable libraries originally build for https://github.com/guillaumeprevot/nimbus.
 
 Any feedback would be great !
 
@@ -16,6 +16,7 @@ Router router = new Router()
 JettyServer server = new JettyServer(8443)
 	.https("/path/to/keystore/file", "KeystorePassword")
 	.multipart("/path/to/upload/temp/folder", ...)
+	.session(secretKey, timeout, ...)
 	.start(router);
 
 // ...
@@ -73,3 +74,5 @@ static.1.prefix=/public2
 - 2020-06-07 : add route implementation using Java "reflection"
 - 2020-07-05 : add client session support
 - 2020-07-09 : add reusable "utils" package
+- 2020-07-11 : version 1.0
+- 2020-07-13 : version 1.1 (add session configuration)
