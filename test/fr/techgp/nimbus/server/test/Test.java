@@ -103,7 +103,6 @@ public class Test {
 			Test.cookieLine = connection.getHeaderField("Set-Cookie");
 			if (Test.cookieLine == null)
 				throw new Exception("Cookie manquant");
-			System.out.println(Test.cookieLine);
 		}
 	}
 
@@ -199,7 +198,7 @@ public class Test {
 
 			JettyServer s = new JettyServer(PORT);
 			s.multipart(null/* or System.getProperty("java.io.tmpdir")*/, Integer.MAX_VALUE, Long.MAX_VALUE, 10);
-			s.session("ce26b4bb1dc61766fbe866eb5550ab81cc8f48e81dd9a73b98cacb2c66c3e3c0", 2, null, null);
+			s.session(2, null, null, "ce26b4bb1dc61766fbe866eb5550ab81cc8f48e81dd9a73b98cacb2c66c3e3c0");
 			s.start(r);
 
 			try {

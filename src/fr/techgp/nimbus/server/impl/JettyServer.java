@@ -66,13 +66,17 @@ public class JettyServer {
 	}
 
 	/** then configures the session cookie attributes */
-	public JettyServer session(String secretKeyHex, int timeout, String cookiePath, String cookieDomain) {
-		if (secretKeyHex.length() != 64)
-			throw new InvalidParameterException("AES key should be 256 bits (i.e. 32 bytes, i.e. 64 hexadecimal characters)");
-		this.session.setSecretKey(ConversionUtils.hex2bytes(secretKeyHex));
+	public JettyServer session(int timeout, String cookiePath, String cookieDomain, String secretKeyHex) {
 		this.session.setTimeout(timeout);
-		this.session.setCookiePath(cookiePath);
-		this.session.setCookieDomain(cookieDomain);
+		if (cookiePath != null)
+			this.session.setCookiePath(cookiePath);
+		if (cookieDomain != null)
+			this.session.setCookieDomain(cookieDomain);
+		if (secretKeyHex != null) {
+			if (secretKeyHex.length() != 64)
+				throw new InvalidParameterException("AES key should be 256 bits (i.e. 32 bytes, i.e. 64 hexadecimal characters)");
+			this.session.setSecretKey(ConversionUtils.hex2bytes(secretKeyHex));
+		}
 		return this;
 	}
 
