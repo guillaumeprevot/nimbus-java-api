@@ -39,14 +39,11 @@ import fr.techgp.nimbus.utils.RandomUtils;
 public class JSONClientSession implements ClientSession {
 
 	/** The name of the cookie storing session on the client-side */
-	public static final String CLIENT_SESSION_COOKIE_NAME = "nimbus-client-session";
-	/** The default timeout for the client-side session, in seconds (see maxInactiveInterval) */
-	private static final int CLIENT_SESSION_DEFAULT_MAX_ACTIVE_INTERVAL = 60 * 60;
+	private static final String CLIENT_SESSION_COOKIE_NAME = "nimbus-client-session";
 	/** The source of randomness for session id and encryption */
 	private static final SecureRandom RANDOM = new SecureRandom();
-	/** The secret key to used for client session encryption */
-	private static byte[] CLIENT_SESSION_SECRET_KEY = null;
 
+	private final ServletRequest request;
 	private String id;
 	private long creationTime;
 	private long lastAccessedTime;
@@ -54,16 +51,18 @@ public class JSONClientSession implements ClientSession {
 	private int maxInactiveInterval;
 	private JsonObject attributes;
 
-	public JSONClientSession() {
+	public JSONClientSession(ServletRequest request) {
+		this.request = request;
 		this.initDefaults();
 	}
 
-	public JSONClientSession(String id, long creationTime, long lastAccessedTime, JsonObject attributes) {
+	public JSONClientSession(ServletRequest request, String id, long creationTime, long lastAccessedTime, int maxInactiveInterval, JsonObject attributes) {
+		this.request = request;
 		this.id = id;
 		this.creationTime = creationTime;
 		this.lastAccessedTime = lastAccessedTime;
 		this.isNew = false;
-		this.maxInactiveInterval = CLIENT_SESSION_DEFAULT_MAX_ACTIVE_INTERVAL;
+		this.maxInactiveInterval = maxInactiveInterval;
 		this.attributes = attributes;
 	}
 
@@ -140,20 +139,20 @@ public class JSONClientSession implements ClientSession {
 		this.creationTime = System.currentTimeMillis();
 		this.lastAccessedTime = this.creationTime;
 		this.isNew = true;
-		this.maxInactiveInterval = CLIENT_SESSION_DEFAULT_MAX_ACTIVE_INTERVAL;
+		this.maxInactiveInterval = this.request.getSessionConfig().getTimeout();
 		this.attributes = new JsonObject();
 	}
 
 	protected static JSONClientSession load(ServletRequest request, boolean create) {
-		// Get the client-session cookie
+		// Get the client-session cookie (no cookie => no session yet)
 		ServletCookie cookie = request.cookie(CLIENT_SESSION_COOKIE_NAME);
 		if (cookie == null)
-			return create ? new JSONClientSession() : null;
+			return create ? new JSONClientSession(request) : null;
 
-		// Load secret key
-		byte[] secretKey = CLIENT_SESSION_SECRET_KEY;
+		// Load secret key (no secret key => invalidates any previous session)
+		byte[] secretKey = request.getSessionConfig().getSecretKey();
 		if (secretKey == null)
-			return create ? new JSONClientSession() : null;
+			return create ? new JSONClientSession(request) : null;
 
 		// Decode the cookie value while checking for any alteration
 		byte[] bytes;
@@ -161,7 +160,7 @@ public class JSONClientSession implements ClientSession {
 			bytes = decrypt(secretKey, cookie.value());
 		} catch (InvalidParameterException ex) {
 			ex.printStackTrace();
-			return create ? new JSONClientSession() : null;
+			return create ? new JSONClientSession(request) : null;
 		}
 		String json = new String(bytes, StandardCharsets.UTF_8);
 
@@ -177,14 +176,13 @@ public class JSONClientSession implements ClientSession {
 		long now = System.currentTimeMillis();
 		boolean expired = maxInactiveInterval > 0 && (now - lastAccessedTime) > maxInactiveInterval * 1000;
 		if (expired)
-			return new JSONClientSession();
+			return create ? new JSONClientSession(request) : null;
 
 		// Restore session, update "lastAccessedTime" and keep current "maxInactiveInterval"
 		String id = o.get("id").getAsString();
 		long creationTime = o.get("creationTime").getAsLong();
 		JsonObject attributes = o.getAsJsonObject("attributes").getAsJsonObject();
-		JSONClientSession session = new JSONClientSession(id, creationTime, now, attributes);
-		session.maxInactiveInterval(maxInactiveInterval);
+		JSONClientSession session = new JSONClientSession(request, id, creationTime, now, maxInactiveInterval, attributes);
 		return session;
 	}
 
@@ -203,13 +201,14 @@ public class JSONClientSession implements ClientSession {
 		String json = o.toString();
 
 		// Get (or create) secret key for client session encryption
-		byte[] secretKey = CLIENT_SESSION_SECRET_KEY;
+		SessionConfig config = session.request.getSessionConfig();
+		byte[] secretKey = config.getSecretKey();
 		if (secretKey == null) {
-			synchronized (JSONClientSession.class) {
-				if (CLIENT_SESSION_SECRET_KEY == null) {
-					CLIENT_SESSION_SECRET_KEY = generateAES256SecretKey();
-					System.out.println("Generated new secret key " + ConversionUtils.bytes2hex(CLIENT_SESSION_SECRET_KEY));
-					secretKey = CLIENT_SESSION_SECRET_KEY;
+			synchronized (config) {
+				if (config.getSecretKey() == null) {
+					secretKey = generateAES256SecretKey();
+					config.setSecretKey(secretKey);
+					System.out.println("Generated new secret key " + ConversionUtils.bytes2hex(secretKey));
 				}
 			}
 		}
@@ -218,10 +217,14 @@ public class JSONClientSession implements ClientSession {
 		String value = encrypt(secretKey, json.getBytes(StandardCharsets.UTF_8));
 
 		// Add cookie to response
-		ServletCookie cookie = response.cookie(CLIENT_SESSION_COOKIE_NAME, value);
-		cookie.secure(true);
-		cookie.httpOnly(true);
-		cookie.maxAge(session.maxInactiveInterval());
+		response.cookie(
+				CLIENT_SESSION_COOKIE_NAME,
+				config.getCookiePath(),
+				value,
+				config.getCookieDomain(),
+				session.maxInactiveInterval(),
+				true,
+				true);
 	}
 
 	public static final String encrypt(byte[] key, byte[] data) {
@@ -304,12 +307,6 @@ public class JSONClientSession implements ClientSession {
 		} catch (NoSuchAlgorithmException ex) {
 			throw new RuntimeException("Expected algorithm is non supported", ex);
 		}
-	}
-
-	public static final void initAES256SecretKey(String hex) {
-		if (hex.length() != 64)
-			throw new InvalidParameterException("AES key should be 256 bits (i.e. 32 bytes, i.e. 64 hexadecimal characters)");
-		CLIENT_SESSION_SECRET_KEY = ConversionUtils.hex2bytes(hex);
 	}
 
 }

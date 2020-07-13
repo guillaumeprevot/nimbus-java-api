@@ -23,6 +23,8 @@ public class ServletRequest implements Request {
 
 	/** The wrapped request */
 	private final HttpServletRequest request;
+	/** The session configuration */
+	private final SessionConfig sessionConfig;
 	/** The parameters, extracted from path when ":" is found, during route selection */
 	private final Map<String, String> params = new HashMap<>();
 	/** The cookie collections */
@@ -34,12 +36,17 @@ public class ServletRequest implements Request {
 	/** The client session wrapper */
 	private JSONClientSession clientSession;
 
-	public ServletRequest(HttpServletRequest request) {
+	public ServletRequest(HttpServletRequest request, SessionConfig sessionConfig) {
 		this.request = request;
+		this.sessionConfig = sessionConfig;
 	}
 
 	public HttpServletRequest raw() {
 		return this.request;
+	}
+
+	public SessionConfig getSessionConfig() {
+		return this.sessionConfig;
 	}
 
 	@Override

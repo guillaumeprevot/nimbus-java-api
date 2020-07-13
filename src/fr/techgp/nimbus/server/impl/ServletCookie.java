@@ -87,5 +87,21 @@ public class ServletCookie implements Cookie {
 		this.cookie.setHttpOnly(httpOnly);
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.name()).append("=").append(this.value());
+		if (this.path() != null)
+			sb.append("; Path=").append(this.path());
+		if (this.domain() != null)
+			sb.append("; Domain=").append(this.domain());
+		if (this.maxAge() >= 0)
+			sb.append("; MaxAge=").append(this.maxAge());
+		if (this.secure())
+			sb.append("; Secure");
+		if (this.httpOnly())
+			sb.append("; HttpOnly");
+		return sb.toString();
+	}
 
 }

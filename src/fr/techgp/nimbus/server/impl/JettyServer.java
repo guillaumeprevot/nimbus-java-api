@@ -2,6 +2,7 @@ package fr.techgp.nimbus.server.impl;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import fr.techgp.nimbus.server.MimeTypes;
 import fr.techgp.nimbus.server.Router;
+import fr.techgp.nimbus.utils.ConversionUtils;
 
 /**
  * This class is an embedded Jetty server with the ability to use a {@link Router} a it's main {@link Handler}
@@ -42,6 +44,7 @@ public class JettyServer {
 	private String keystoreFile;
 	private String keystorePassword;
 	private MultipartConfigElement multipart = null;
+	private SessionConfig session = new SessionConfig();
 	private Server server;
 
 	/** creates a Jetty server wrapper that will use the specified port when started */
@@ -62,9 +65,20 @@ public class JettyServer {
 		return this;
 	}
 
+	/** then configures the session cookie attributes */
+	public JettyServer session(String secretKeyHex, int timeout, String cookiePath, String cookieDomain) {
+		if (secretKeyHex.length() != 64)
+			throw new InvalidParameterException("AES key should be 256 bits (i.e. 32 bytes, i.e. 64 hexadecimal characters)");
+		this.session.setSecretKey(ConversionUtils.hex2bytes(secretKeyHex));
+		this.session.setTimeout(timeout);
+		this.session.setCookiePath(cookiePath);
+		this.session.setCookieDomain(cookieDomain);
+		return this;
+	}
+
 	/** starts the Jetty server using with a special {@link Handler} that will use the {@link Router} to handle requests */
 	public JettyServer start(Router router) throws Exception {
-		this.server = createAndStartServer(router, this.port, this.keystoreFile, this.keystorePassword, this.multipart);
+		this.server = createAndStartServer(router, this.port, this.keystoreFile, this.keystorePassword, this.multipart, this.session);
 		return this;
 	}
 
@@ -80,16 +94,18 @@ public class JettyServer {
 
 		private final Router router;
 		private final MultipartConfigElement multipart;
+		private final SessionConfig session;
 
-		public JettyRouterHandler(Router router, MultipartConfigElement multipart) {
+		public JettyRouterHandler(Router router, MultipartConfigElement multipart, SessionConfig session) {
 			this.router = router;
 			this.multipart = multipart;
+			this.session = session;
 		}
 
 		@Override
 		public void doHandle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 				throws IOException, ServletException {
-			ServletRequest req = new JettyServletRequest(request, this.multipart);
+			ServletRequest req = new JettyServletRequest(request, this.session, this.multipart);
 			ServletResponse res = new ServletResponse(response);
 			this.router.process(req, res);
 			// Save client session, if any
@@ -118,8 +134,8 @@ public class JettyServer {
 
 		private final MultipartConfigElement multipart;
 
-		public JettyServletRequest(HttpServletRequest request, MultipartConfigElement multipart) {
-			super(request);
+		public JettyServletRequest(HttpServletRequest request, SessionConfig session, MultipartConfigElement multipart) {
+			super(request, session);
 			this.multipart = multipart;
 		}
 
@@ -142,9 +158,9 @@ public class JettyServer {
 
 	}
 
-	/** Thie method creates a Jetty {@link Server} using specified handler and port and optional keystore */
+	/** This method creates a Jetty {@link Server} using specified handler and port and optional keystore */
 	@SuppressWarnings("resource")
-	protected static final Server createAndStartServer(Router router, int port, String keystore, String keystorePassword, MultipartConfigElement multipart) throws Exception {
+	protected static final Server createAndStartServer(Router router, int port, String keystore, String keystorePassword, MultipartConfigElement multipart, SessionConfig session) throws Exception {
 		// Create server
 		Server server = new Server();
 
@@ -157,7 +173,7 @@ public class JettyServer {
 		server.setConnectors(new Connector[] { connector });
 
 		// Add handler
-		JettyRouterHandler handler = new JettyRouterHandler(router, multipart);
+		JettyRouterHandler handler = new JettyRouterHandler(router, multipart, session);
 		server.setHandler(handler);
 
 		// Configure session management
@@ -165,8 +181,10 @@ public class JettyServer {
 		handler.setSessionTrackingModes(Set.of(SessionTrackingMode.COOKIE));
 		handler.getSessionCookieConfig().setName("nimbus-server-session"); // instead of JSESSIONID
 		handler.getSessionCookieConfig().setHttpOnly(true); // no usage in JavaScript
-		handler.getSessionCookieConfig().setSecure(keystore != null); // if HTTPS is enabled
-		handler.getSessionCookieConfig().setMaxAge(60 * 60); // 1h
+		handler.getSessionCookieConfig().setSecure(true); // if HTTPS is enabled
+		handler.getSessionCookieConfig().setMaxAge(session.getTimeout());
+		handler.getSessionCookieConfig().setPath(session.getCookiePath());
+		handler.getSessionCookieConfig().setDomain(session.getCookieDomain());
 
 		// Start
 		server.start();

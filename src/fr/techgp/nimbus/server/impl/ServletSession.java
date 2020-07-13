@@ -12,6 +12,8 @@ public class ServletSession implements ServerSession {
 	public ServletSession(ServletRequest request, HttpSession session) {
 		this.request = request;
 		this.session = session;
+		if (this.session.isNew())
+			this.session.setMaxInactiveInterval(request.getSessionConfig().getTimeout());
 	}
 
 	public HttpSession raw() {

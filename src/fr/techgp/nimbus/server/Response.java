@@ -39,11 +39,11 @@ public interface Response {
 	public void length(long length);
 
 	/** adds a cookie to the response with specified name and value */
-	public Cookie cookie(String name, String value);
+	public void cookie(String name, String value);
 	/** adds a cookie to the response with specified name and value, optional path and domain, and maxAge, secure and httpOnly parameters */
-	public Cookie cookie(String name, String path, String value, String domain, int maxAge, boolean secure, boolean httpOnly);
+	public void cookie(String name, String path, String value, String domain, int maxAge, boolean secure, boolean httpOnly);
 	/** requests a cookie to be removed on client side by setting it's value to "" and maxAge to 0 */
-	public Cookie removeCookie(String name);
+	public void removeCookie(String name);
 
 	/** prepares the response to send a temporary redirect of the client to the specified location */
 	public Render redirect(String location);

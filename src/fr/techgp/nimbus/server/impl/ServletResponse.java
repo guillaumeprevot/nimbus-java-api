@@ -89,25 +89,26 @@ public class ServletResponse implements Response {
 	}
 
 	@Override
-	public ServletCookie cookie(String name, String value) {
-		return cookie(name, "/", value, "", -1, true, true);
+	public void cookie(String name, String value) {
+		cookie(name, "/", value, "", -1, true, true);
 	}
 
 	@Override
-	public ServletCookie cookie(String name, String path, String value, String domain, int maxAge, boolean secure, boolean httpOnly) {
+	public void cookie(String name, String path, String value, String domain, int maxAge, boolean secure, boolean httpOnly) {
 		ServletCookie cookie = new ServletCookie(name, value);
-		cookie.path(path);
-		cookie.domain(domain);
+		if (path != null)
+			cookie.path(path);
+		if (domain != null)
+			cookie.domain(domain);
 		cookie.maxAge(maxAge);
 		cookie.secure(secure);
 		cookie.httpOnly(httpOnly);
 		this.response.addCookie(cookie.raw());
-		return cookie;
 	}
 
 	@Override
-	public ServletCookie removeCookie(String name) {
-		return cookie(name, "", "", null, 0, true, true);
+	public void removeCookie(String name) {
+		cookie(name, "", "", null, 0, true, true);
 	}
 
 	@Override

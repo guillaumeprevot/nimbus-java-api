@@ -103,6 +103,7 @@ public class Test {
 			Test.cookieLine = connection.getHeaderField("Set-Cookie");
 			if (Test.cookieLine == null)
 				throw new Exception("Cookie manquant");
+			System.out.println(Test.cookieLine);
 		}
 	}
 
@@ -186,7 +187,6 @@ public class Test {
 					Session currentSession = client ? req.clientSession(false) : req.session(false);
 					String currentValue = currentSession == null ? null : currentSession.attribute("value");
 					Session updatedSession = client ? req.clientSession() : req.session();
-					updatedSession.maxInactiveInterval(2);
 					updatedSession.attribute("value", req.queryParameter("value"));
 					return Render.string(currentValue == null ? "" : currentValue);
 				} catch (RuntimeException ex) {
@@ -199,6 +199,7 @@ public class Test {
 
 			JettyServer s = new JettyServer(PORT);
 			s.multipart(null/* or System.getProperty("java.io.tmpdir")*/, Integer.MAX_VALUE, Long.MAX_VALUE, 10);
+			s.session("ce26b4bb1dc61766fbe866eb5550ab81cc8f48e81dd9a73b98cacb2c66c3e3c0", 2, null, null);
 			s.start(r);
 
 			try {
@@ -268,7 +269,6 @@ public class Test {
 		get("/reflect3?" + p).length(3).body("abc").run();
 
 		// Check client session
-		JSONClientSession.initAES256SecretKey("ce26b4bb1dc61766fbe866eb5550ab81cc8f48e81dd9a73b98cacb2c66c3e3c0");
 		get("/session?value=toto").cookie(false, true).length(0).run(); // new cookie, nothing in session, store toto
 		get("/session?value=titi").cookie(true, true).length(4).body("toto").run(); // send cookie, get toto, store titi
 		get("/session?value=tutu").cookie(true, true).length(4).body("titi").run(); // send cookie, get titi, store tutu
