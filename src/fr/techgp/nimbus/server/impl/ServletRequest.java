@@ -34,7 +34,7 @@ public class ServletRequest implements Request {
 	/** The session wrapper */
 	private ServletSession session;
 	/** The client session wrapper */
-	private JSONClientSession clientSession;
+	private JWTClientSession clientSession;
 
 	public ServletRequest(HttpServletRequest request, SessionConfig sessionConfig) {
 		this.request = request;
@@ -245,16 +245,14 @@ public class ServletRequest implements Request {
 	}
 
 	@Override
-	public JSONClientSession clientSession() {
-		if (this.clientSession == null)
-			this.clientSession = JSONClientSession.load(this, true);
-		return this.clientSession;
+	public JWTClientSession clientSession() {
+		return this.clientSession(true);
 	}
 
 	@Override
-	public JSONClientSession clientSession(boolean create) {
+	public JWTClientSession clientSession(boolean create) {
 		if (this.clientSession == null)
-			this.clientSession = JSONClientSession.load(this, create);
+			this.clientSession = JWTClientSession.load(this, create);
 		return this.clientSession;
 	}
 

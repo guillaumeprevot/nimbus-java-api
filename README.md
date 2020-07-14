@@ -76,3 +76,4 @@ static.1.prefix=/public2
 - 2020-07-09 : add reusable "utils" package
 - 2020-07-11 : version 1.0
 - 2020-07-13 : version 1.1 (add session configuration)
+- 2020-07-14 : version 1.2 (use JJWT for JSON Web Token)

@@ -74,7 +74,7 @@ public class JettyServer {
 			this.session.setCookieDomain(cookieDomain);
 		if (secretKeyHex != null) {
 			if (secretKeyHex.length() != 64)
-				throw new InvalidParameterException("AES key should be 256 bits (i.e. 32 bytes, i.e. 64 hexadecimal characters)");
+				throw new InvalidParameterException("Secret key should be 256 bits (i.e. 32 bytes, i.e. 64 hexadecimal characters)");
 			this.session.setSecretKey(ConversionUtils.hex2bytes(secretKeyHex));
 		}
 		return this;
@@ -113,7 +113,7 @@ public class JettyServer {
 			ServletResponse res = new ServletResponse(response);
 			this.router.process(req, res);
 			// Save client session, if any
-			JSONClientSession.save(req.clientSession(false), res);
+			JWTClientSession.save(req.clientSession(false), res);
 			try {
 				// Write response
 				res.body().render(req, res, StandardCharsets.UTF_8, () -> {

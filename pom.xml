@@ -4,7 +4,7 @@
 	<groupId>fr.techgp.nimbus</groupId>
 	<artifactId>nimbus-java-api</artifactId>
 	<packaging>jar</packaging>
-	<version>1.1</version>
+	<version>1.2</version>
 	<name>Nimbus Java API</name>
 
 	<properties>
@@ -77,6 +77,29 @@
 			<artifactId>slf4j-simple</artifactId>
 			<version>[1.7.30,1.8.0-alpha0)</version>
 			<optional>true</optional>
+		</dependency>
+
+		<!--
+			https://github.com/jwtk/jjwt#install-jdk-maven
+			https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
+			https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-impl
+			https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-gson
+		-->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.2</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.2</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-gson</artifactId>
+			<version>0.11.2</version>
 		</dependency>
 	</dependencies>
 

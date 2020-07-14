@@ -20,6 +20,9 @@
 	<classpathentry kind="lib" path="lib/jetty-util-9.4.30.v20200611.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-webapp-9.4.30.v20200611.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-xml-9.4.30.v20200611.jar"/>
+	<classpathentry kind="lib" path="lib/jjwt-api-0.11.2.jar"/>
+	<classpathentry kind="lib" path="lib/jjwt-gson-0.11.2.jar"/>
+	<classpathentry kind="lib" path="lib/jjwt-impl-0.11.2.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.30.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.30.jar"/>
 	<classpathentry kind="lib" path="lib/websocket-api-9.4.30.v20200611.jar"/>

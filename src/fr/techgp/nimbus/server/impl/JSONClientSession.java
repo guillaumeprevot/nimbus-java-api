@@ -35,7 +35,10 @@ import fr.techgp.nimbus.utils.RandomUtils;
  * The implementation follows the best practice as explained here (notably page 15) :
  *   https://crypto.stanford.edu/cs142/papers/web-session-management.pdf
  * This document is saved in the "doc" folder.
+ *
+ * @deprecated use {@link JWTClientSession} instead
  */
+@Deprecated()
 public class JSONClientSession implements ClientSession {
 
 	/** The name of the cookie storing session on the client-side */

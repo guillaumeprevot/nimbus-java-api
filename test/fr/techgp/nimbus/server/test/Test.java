@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 
 import com.google.gson.JsonObject;
 
@@ -22,13 +21,10 @@ import fr.techgp.nimbus.server.Session;
 import fr.techgp.nimbus.server.Session.ClientSession;
 import fr.techgp.nimbus.server.Session.ServerSession;
 import fr.techgp.nimbus.server.Upload;
-import fr.techgp.nimbus.server.impl.JSONClientSession;
 import fr.techgp.nimbus.server.impl.JettyServer;
 import fr.techgp.nimbus.server.impl.MethodRoute;
 import fr.techgp.nimbus.utils.FunctionalUtils.ConsumerWithException;
 import fr.techgp.nimbus.utils.IOUtils;
-import fr.techgp.nimbus.utils.RandomUtils;
-import fr.techgp.nimbus.utils.StringUtils;
 import fr.techgp.nimbus.utils.WebUtils.MultiPartAdapter;
 
 public class Test {
@@ -202,7 +198,6 @@ public class Test {
 			s.start(r);
 
 			try {
-				runClientSessionEncryptionTests();
 				runAllTests();
 				System.out.println("OK");
 			} finally {
@@ -211,19 +206,6 @@ public class Test {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-	}
-
-	private static final void runClientSessionEncryptionTests() {
-		byte[] key = JSONClientSession.generateAES256SecretKey();
-		char[] ascii = StringUtils.OTHER_ASCII_PRINTABLE_CHARACTERS.toCharArray();
-
-		String input = RandomUtils.randomAscii(new Random(), 256, true, true, true, ascii);
-		byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
-		String message = JSONClientSession.encrypt(key, inputBytes);
-		byte[] outputBytes = JSONClientSession.decrypt(key, message);
-		String output = new String(outputBytes, StandardCharsets.UTF_8);
-
-		assertThat(input.equals(output));
 	}
 
 	private static final void runAllTests() throws Exception {
