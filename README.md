@@ -1,6 +1,6 @@
 # Nimbus Java API
 
-This project contains some reusable libraries originally build for https://github.com/guillaumeprevot/nimbus.
+This project contains reusable libraries originally created for https://github.com/guillaumeprevot/nimbus.
 
 Any feedback would be great !
 
