@@ -86,4 +86,38 @@ public final class StringUtils {
 		return sb.toString();
 	}
 
+	/**
+	 * Checks if text <i>value</i> is surrounded by <i>start</i> and <i>end</i>
+	 *
+	 * <pre>
+	 * - first char = <i>start</i>
+	 * - last char = <i>end</i>
+	 * - no other <i>end</i> except after an another <i>start</i>
+	 * </pre>
+	 *
+	 * The algorithm simply increases depth each time a <i>start</i> is encountered and decreases
+	 * depth each time a <i>end</i> is encountered. If depth decreases to 0 before end of string, it
+	 * means there each two distinct blocks.
+	 *
+	 * @param value the string to test
+	 * @param start the starting character ('(' for instance)
+	 * @param end the terminating character (')' for instance)
+	 * @return true if <i>value</i> is delimited by <i>start</i> and <i>end</i>, false otherwise
+	 */
+	public static final boolean checkDelimitedBy(String value, char start, char end) {
+		if ((value.length() < 2) || (value.charAt(0) != start) || (value.charAt(value.length() - 1) != end))
+			return false;
+		int curDepth = 1;
+		for (int i = 1; i < value.length() - 1; i++) {
+			if (value.charAt(i) == start) {
+				curDepth++;
+			} else if (value.charAt(i) == end) {
+				curDepth--;
+				if (curDepth == 0)
+					return false;
+			}
+		}
+		return true;
+	}
+
 }

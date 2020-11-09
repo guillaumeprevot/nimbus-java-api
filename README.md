@@ -77,3 +77,4 @@ static.1.prefix=/public2
 - 2020-07-11 : version 1.0
 - 2020-07-13 : version 1.1 (add session configuration)
 - 2020-07-14 : version 1.2 (use JJWT for JSON Web Token)
+- 2020-11-09 : version 1.3 (update dependencies and add formula package and utilities)
