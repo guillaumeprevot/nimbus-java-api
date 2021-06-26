@@ -152,12 +152,10 @@ public enum FormulaType {
 		return outputType.convertFrom(value, this);
 	}
 
-	@SuppressWarnings("static-method")
 	public boolean convertableFrom(FormulaType inputType) {
 		return inputType == Null;
 	}
 
-	@SuppressWarnings("static-method")
 	public Object convertFrom(Object value, FormulaType inputType) {
 		if (value == null || inputType == Null)
 			return null;

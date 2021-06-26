@@ -140,7 +140,6 @@ public class Test {
 	}
 
 	public static class ReflectTest {
-		@SuppressWarnings("static-method")
 		public Render run(String stringValue) {
 			return Render.string(stringValue);
 		}
