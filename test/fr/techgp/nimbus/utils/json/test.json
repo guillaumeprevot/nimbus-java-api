@@ -1,0 +1,227 @@
+[
+  {
+    "_id": "580a3fc9051aa09efea2c8a6",
+    "index": 0,
+    "guid": "ac48384e-6f75-4424-8cd2-5229ce204d99",
+    "isActive": true,
+    "balance": "$2,135.90",
+    "picture": "http://placehold.it/32x32",
+    "age": 29,
+    "eyeColor": "green",
+    "name": "Kristine Bruce",
+    "gender": "female",
+    "company": "NIPAZ",
+    "email": "kristinebruce@nipaz.com",
+    "phone": "+1 (862) 569-3943",
+    "address": "308 Bills Place, Comptche, Texas, 8579",
+    "about": "Id sint in laborum pariatur reprehenderit anim velit est proident ullamco irure. Nulla aliquip duis cupidatat ipsum. Excepteur quis nostrud proident non aute eiusmod laborum dolore minim sint labore aute.\r\n",
+    "registered": "2014-11-08T07:56:14 -01:00",
+    "latitude": -79.663601,
+    "longitude": -156.193991,
+    "tags": [
+      "non",
+      "sunt",
+      "quis",
+      "Lorem",
+      "minim",
+      "adipisicing",
+      "proident"
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "name": "Betty Pace"
+      },
+      {
+        "id": 1,
+        "name": "Romero Cote"
+      },
+      {
+        "id": 2,
+        "name": "Richard Jackson"
+      }
+    ],
+    "greeting": "Hello, Kristine Bruce! You have 2 unread messages.",
+    "favoriteFruit": "banana"
+  },
+  {
+    "_id": "580a3fc9f80f51ee5c132e2d",
+    "index": 1,
+    "guid": "061c2aef-72ab-4a4b-9053-f0e82aafa236",
+    "isActive": true,
+    "balance": "$1,621.00",
+    "picture": "http://placehold.it/32x32",
+    "age": 35,
+    "eyeColor": "green",
+    "name": "Neva Leblanc",
+    "gender": "female",
+    "company": "GEOLOGIX",
+    "email": "nevaleblanc@geologix.com",
+    "phone": "+1 (818) 437-3504",
+    "address": "506 Anchorage Place, Logan, Washington, 276",
+    "about": "Nulla nostrud excepteur anim irure Lorem mollit adipisicing. Duis duis amet commodo aute reprehenderit non deserunt est consequat. Consequat sit consectetur dolore elit cillum exercitation adipisicing exercitation ullamco proident duis consectetur cupidatat dolor.\r\n",
+    "registered": "2015-03-31T11:01:48 -02:00",
+    "latitude": 6.287046,
+    "longitude": -48.786158,
+    "tags": [
+      "dolor",
+      "non",
+      "culpa",
+      "fugiat",
+      "laboris",
+      "non",
+      "commodo"
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "name": "Cassie Burks"
+      },
+      {
+        "id": 1,
+        "name": "Joseph Britt"
+      },
+      {
+        "id": 2,
+        "name": "Rodriguez Lopez"
+      }
+    ],
+    "greeting": "Hello, Neva Leblanc! You have 6 unread messages.",
+    "favoriteFruit": "banana"
+  },
+  {
+    "_id": "580a3fc96bf3dc1b182638b2",
+    "index": 2,
+    "guid": "d747d3b0-3ab2-4a32-97ae-f6e87fd6bfb9",
+    "isActive": false,
+    "balance": "$2,320.50",
+    "picture": "http://placehold.it/32x32",
+    "age": 25,
+    "eyeColor": "brown",
+    "name": "Diane Guthrie",
+    "gender": "female",
+    "company": "MARVANE",
+    "email": "dianeguthrie@marvane.com",
+    "phone": "+1 (832) 519-3764",
+    "address": "617 Bogart Street, Deltaville, West Virginia, 2027",
+    "about": "Proident et aute pariatur minim minim dolore ea minim id. Fugiat nulla minim eiusmod deserunt voluptate aute laborum tempor exercitation nisi magna. Pariatur veniam enim aliqua non consectetur enim irure in ad in consectetur quis dolor cillum. Quis consectetur magna qui laboris aliqua.\r\n",
+    "registered": "2015-06-30T03:18:50 -02:00",
+    "latitude": 7.159874,
+    "longitude": 138.533205,
+    "tags": [
+      "adipisicing",
+      "ex",
+      "dolore",
+      "enim",
+      "ipsum",
+      "commodo",
+      "tempor"
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "name": "Sweet Pope"
+      },
+      {
+        "id": 1,
+        "name": "Hodge Combs"
+      },
+      {
+        "id": 2,
+        "name": "Tucker Lawrence"
+      }
+    ],
+    "greeting": "Hello, Diane Guthrie! You have 7 unread messages.",
+    "favoriteFruit": "apple"
+  },
+  {
+    "_id": "580a3fc91af595a9da8f56b2",
+    "index": 3,
+    "guid": "a31531c4-bd33-423e-96c9-bb3d8cd8eaf0",
+    "isActive": true,
+    "balance": "$2,170.25",
+    "picture": "http://placehold.it/32x32",
+    "age": 21,
+    "eyeColor": "blue",
+    "name": "Dotson Sargent",
+    "gender": "male",
+    "company": "QUOTEZART",
+    "email": "dotsonsargent@quotezart.com",
+    "phone": "+1 (952) 476-3394",
+    "address": "314 Dover Street, Fairhaven, Indiana, 6174",
+    "about": "Sint cupidatat duis veniam pariatur dolore cupidatat pariatur incididunt veniam quis ullamco nulla. Adipisicing proident nostrud veniam non excepteur cillum aliqua ad commodo exercitation enim. Veniam ullamco sint fugiat nulla proident anim do dolore veniam tempor.\r\n",
+    "registered": "2015-01-01T10:28:57 -01:00",
+    "latitude": -16.099062,
+    "longitude": 139.498547,
+    "tags": [
+      "reprehenderit",
+      "nostrud",
+      "aliqua",
+      "ut",
+      "aliqua",
+      "ad",
+      "sunt"
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "name": "Tameka Chapman"
+      },
+      {
+        "id": 1,
+        "name": "Robles Hardy"
+      },
+      {
+        "id": 2,
+        "name": "Benjamin Stafford"
+      }
+    ],
+    "greeting": "Hello, Dotson Sargent! You have 9 unread messages.",
+    "favoriteFruit": "strawberry"
+  },
+  {
+    "_id": "580a3fc9373e6bdd5ee55f1f",
+    "index": 4,
+    "guid": "41807649-8780-4783-a863-04ba0c8e39fd",
+    "isActive": false,
+    "balance": "$2,293.38",
+    "picture": "http://placehold.it/32x32",
+    "age": 37,
+    "eyeColor": "blue",
+    "name": "Sweeney Cherry",
+    "gender": "male",
+    "company": "OPTIQUE",
+    "email": "sweeneycherry@optique.com",
+    "phone": "+1 (944) 533-3934",
+    "address": "682 Newel Street, Springhill, New Jersey, 5678",
+    "about": "Incididunt eiusmod magna officia esse et velit consectetur nisi fugiat nisi anim adipisicing. Et Lorem exercitation officia et velit aute non mollit occaecat aliquip esse. Sunt veniam irure quis in amet exercitation cillum pariatur ad Lorem quis id sunt ea.\r\n",
+    "registered": "2016-01-06T01:06:48 -01:00",
+    "latitude": 53.911652,
+    "longitude": -92.918597,
+    "tags": [
+      "reprehenderit",
+      "incididunt",
+      "proident",
+      "in",
+      "cupidatat",
+      "do",
+      "dolore"
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "name": "Roach Mercado"
+      },
+      {
+        "id": 1,
+        "name": "Parker Hancock"
+      },
+      {
+        "id": 2,
+        "name": "Sloan Alston"
+      }
+    ],
+    "greeting": "Hello, Sweeney Cherry! You have 8 unread messages.",
+    "favoriteFruit": "strawberry"
+  }
+]
