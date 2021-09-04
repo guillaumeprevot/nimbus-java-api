@@ -9,10 +9,15 @@ Any feedback would be great !
 Here is an example of the routing library available in this project.
 
 ```java
+// Configure router
 Router router = new Router()
 	.get("/ping",        (req, res) -> Render.string("pong"))
 	.get("/hello/:name", (req, res) -> Render.string("Hello " + req.pathParameter(":name") + "!"));
 
+// Upload support
+router.post("/files/upload", (req, res) -> req.upload("file").saveTo(new File(...)));
+
+// Wrap router in Jetty embedded server
 JettyServer server = new JettyServer(8443)
 	.https("/path/to/keystore/file", "KeystorePassword")
 	.multipart("/path/to/upload/temp/folder", ...)

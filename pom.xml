@@ -4,7 +4,7 @@
 	<groupId>fr.techgp.nimbus</groupId>
 	<artifactId>nimbus-java-api</artifactId>
 	<packaging>jar</packaging>
-	<version>1.4</version>
+	<version>1.6-SNAPSHOT</version>
 	<name>Nimbus Java API</name>
 
 	<properties>
