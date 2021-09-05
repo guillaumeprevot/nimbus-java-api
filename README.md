@@ -17,6 +17,15 @@ Router router = new Router()
 // Upload support
 router.post("/files/upload", (req, res) -> req.upload("file").saveTo(new File(...)));
 
+// WebSocket are also supported
+router.websocket("/ws/echo", WebSocket.text((session, message) -> message));
+// a more complex example...
+router.websocket("/ws/example", new WebSocket()
+	.onConnect((session) -> System.out.println("WebSocket connected " + session))
+	.onText((session, message) -> session.sendText("ping".equals(message) ? "pong" : message))
+	.onError((session, throwable) -> throwable.printStackTrace())
+	.onClose((session, statusCode, reason) -> System.out.println("WebSocket closed " + session)));
+
 // Wrap router in Jetty embedded server
 JettyServer server = new JettyServer(8443)
 	.https("/path/to/keystore/file", "KeystorePassword")

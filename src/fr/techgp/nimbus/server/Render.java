@@ -49,7 +49,7 @@ public interface Render {
 	 * This class make it possible to throw an Exception anywhere in {@link Route#handle(Request, Response)}
 	 * while still providing a proper {@link Render}.
 	 *
-	 * By default, it is catched in {@link Router#process(Request, Response)} to set {@link Response#body(Render)}.
+	 * By default, it is catched in {@link Router#processList(Request, Response, List, boolean)} to set {@link Response#body(Render)}.
 	 */
 	public static class Exception extends RuntimeException {
 

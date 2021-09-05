@@ -175,7 +175,7 @@ public class WebServerApplication {
 				sb.append("</ul>");
 			}
 
-			sb.append("<a href=\"/../is/forbidden\">/../is/forbidden</a> returns an error<br />");
+			sb.append("<a href=\"/..is/forbidden\">/..is/forbidden</a> returns an error<br />");
 			if ("true".equals(settings.apply("utils.ping.enabled", null)))
 				sb.append("<a href=\"/utils/ping\">/utils/ping</a> returns \"pong\"<br />");
 			if ("true".equals(settings.apply("utils.ip.enabled", null)))
@@ -188,11 +188,13 @@ public class WebServerApplication {
 				sb.append("<a href=\"/utils/iblocklist\">/utils/iblocklist</a> merges some iblocklist<br />");
 			if ("true".equals(settings.apply("utils.help.enabled", null)))
 				sb.append("<a href=\"/utils/help\">/utils/help</a> is this page<br />");
+
 			this.content = sb.toString();
 		}
 
 		@Override
 		public Render handle(Request request, Response response) {
+			response.type(MimeTypes.HTML);
 			return Render.string(this.content);
 		}
 

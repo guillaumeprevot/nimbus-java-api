@@ -19,53 +19,34 @@ import fr.techgp.nimbus.server.impl.JettyServer;
  * <li><i>routes handlers</i> : they are executed in order, until one of them sets the response body</li>
  * <li><i>after filters</i> : they are all executed at the end, in a "finally" block</li>
  * </ul>
+ * <p>The {@link Router} also supports {@link WebSocket} entries</p>
  */
 public class Router {
 
-	public static final String DEFAULT_CONTENT_TYPE = "text/html; charset=utf-8";
-
 	/** This class is a simple container for a {@link Route} and his associated {@link Matcher} */
-	private static final class RouteEntry {
+	public static final class RouteEntry {
 		public Matcher matcher;
 		public Route route;
 	}
 
-	private List<RouteEntry> beforeFilters = new ArrayList<>();
-	private List<RouteEntry> routeHandlers = new ArrayList<>();
-	private List<RouteEntry> afterFilters = new ArrayList<>();
-
-	/** handles a {@link Request} to prepare the {@link Response} using registered {@link Route} lists */
-	public void process(Request request, Response response) {
-		try {
-			// Process ALL before filters
-			processList(request, response, this.beforeFilters, true);
-			try {
-				// Process routes if body is not set yet, and stop as soon as a body is set
-				if (response.body() == null)
-					processList(request, response, this.routeHandlers, false);
-			} finally {
-				// Process ALL after filters
-				processList(request, response, this.afterFilters, true);
-			}
-
-			// Reply 404 Not Found if no route matches request
-			if (response.body() == null) {
-				response.type(DEFAULT_CONTENT_TYPE);
-				response.body(Render.notFound());
-			}
-
-			// Write response to output stream
-			if (response.type() == null)
-				response.type(DEFAULT_CONTENT_TYPE);
-
-		} catch (Exception ex) {
-			// Reply 500 for exceptions
-			response.body(Render.throwable(ex));
-		}
+	/** This class is a simple container for a {@link WebSocket} and his associated {@link String} path */
+	public static final class WebSocketEntry {
+		public String path;
+		public WebSocket ws;
 	}
 
+	/** This interface is used to walk through any of the router collection, until consume return true */
+	public static interface EntryConsumer<T> {
+		public boolean consume(T entry) throws Exception;
+	}
+
+	private final List<RouteEntry> beforeFilters = new ArrayList<>();
+	private final List<RouteEntry> routeHandlers = new ArrayList<>();
+	private final List<RouteEntry> afterFilters = new ArrayList<>();
+	private final List<WebSocketEntry> websockets = new ArrayList<>();
+
 	/** walks through the list of {@link RouteEntry} to find matching {@link Route} using {@link Matcher} */
-	private void processList(Request request, Response response, List<RouteEntry> entries, boolean processAll) throws Exception {
+	public void processList(Request request, Response response, List<RouteEntry> entries, boolean processAll) throws Exception {
 		for (RouteEntry entry : entries) {
 			if (entry.matcher.matches(request)) {
 				try {
@@ -104,6 +85,11 @@ public class Router {
 		return this;
 	}
 
+	/** returns the collection of <i>before filters</i> */
+	public List<RouteEntry> beforeFilters() {
+		return this.beforeFilters;
+	}
+
 	/** adds a <i>route handler</i> matching the specified "path" */
 	public Router route(String path, Route route) {
 		return route(Matcher.Path.of(path), route);
@@ -121,6 +107,11 @@ public class Router {
 		e.route = route;
 		this.routeHandlers.add(e);
 		return this;
+	}
+
+	/** returns the collection of <i>route handlers</i> */
+	public List<RouteEntry> routeHandlers() {
+		return this.routeHandlers;
 	}
 
 	/** adds an <i>after filter</i> matching the specified "path" */
@@ -142,6 +133,11 @@ public class Router {
 		return this;
 	}
 
+	/** returns the collection of <i>after filters</i> */
+	public List<RouteEntry> afterFilters() {
+		return this.afterFilters;
+	}
+
 	/** adds a <i>route handler</i> matching the specified "path" and GET HTTP "method" */
 	public Router get(String path, Route route) {
 		return route(Matcher.Method.GET.and(Matcher.Path.of(path)), route);
@@ -155,6 +151,20 @@ public class Router {
 	/** adds a <i>route handler</i> that redirects from one path to another, whatever the HTTP method */
 	public Router redirect(String from, String to) {
 		return route(Matcher.Path.is(from), (req, resp) -> Render.redirect(to));
+	}
+
+	/** registers a WebSocket accessible at the specified path */
+	public Router websocket(String path, WebSocket webSocket) {
+		WebSocketEntry e = new WebSocketEntry();
+		e.path = path;
+		e.ws = webSocket;
+		this.websockets.add(e);
+		return this;
+	}
+
+	/** returns the collection of <i>websockets</i> */
+	public List<WebSocketEntry> websockets() {
+		return this.websockets;
 	}
 
 }
