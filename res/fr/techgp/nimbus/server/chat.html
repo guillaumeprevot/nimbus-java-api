@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+body, html { margin: 0; padding: 0; }
+* { box-sizing: border-box; }
+#controls { display: flex; flex-direction: row; background-color: #444; padding: 5px; }
+#controls > * {  margin: 0 5px; border-radius: 8px; }
+button { flex: none; font-size: 14pt; padding: 10px 20px; }
+input { flex: auto; font-size: 14pt; padding: 0 20px; outline: none; }
+#users { display: flex; flex-direction: row; background-color: #444; color: white; }
+#users > * { flex: auto; padding: 5px; text-align: center; }
+#chat > * { display: block; padding: 5px; }
+#chat > * > * { display: inline-block; border-radius: 5px; padding: 5px; max-width: 60%; }
+#chat > .me { text-align: right; }
+#chat > .me > span { background-color: #9d866c; color: white; }
+#chat > .peer { text-align: left; }
+#chat > .peer > span { background-color: #7097b4; color: white; }
+#chat > .server { text-align: center; color: gray; font-style: italic; }
+		</style>
+	</head>
+	<body>
+
+<div id="controls">
+	<button type="button" id="connect">Connect</button>
+	<input type="text" id="message" placeholder="Type your message" disabled>
+	<button type="button" id="send" disabled>Send</button>
+	<button type="button" id="close" disabled>Close</button>
+</div>
+<div id="users" style=""></div>
+<div id="chat"></div>
+<script>
+	var connectButton = document.getElementById('connect');
+	var messageInput = document.getElementById('message');
+	var sendButton = document.getElementById('send');
+	var closeButton = document.getElementById('close');
+	var userList = document.getElementById('users');
+	var chatContent = document.getElementById('chat');
+	var ws = null;
+	var username = null;
+
+	connectButton.addEventListener('click', () => connect());
+	messageInput.addEventListener('keypress', (e) => (e.keyCode === 13) && send());
+	sendButton.addEventListener('click', () => send());
+	closeButton.addEventListener('click', () => ws.close());
+
+	function connect() {
+		ws = new WebSocket("ws://" + location.hostname + ":" + location.port + "/utils/chat.ws");
+		ws.onmessage = update;
+		ws.onclose = close;
+		[closeButton, messageInput, sendButton].forEach(e => e.disabled = false);
+		connectButton.disabled = true;
+	}
+
+	function send(message) {
+		if (messageInput.value !== '') {
+			ws.send(messageInput.value);
+			messageInput.value = '';
+		}
+	}
+
+	function update(msg) {
+		var data = JSON.parse(msg.data);
+		if (data.type === 'username') {
+			username = data.username;
+		} else {
+			var div = document.createElement('div');
+			div.className = data.username === username ? 'me' : data.username === 'Server' ? 'server' : 'peer';
+			var span = document.createElement('span');
+			span.innerText = data.message;
+			div.appendChild(span);
+			if (data.username !== username && data.username !== 'Server')
+				div.appendChild(document.createTextNode(' ' + data.username));
+			chatContent.insertBefore(div, chatContent.childNodes[0]); 
+			userList.innerHTML = data.userlist.map((user) => '<span>' + user + '</span>').join();
+		}
+	}
+
+	function close() {
+		userList.innerHTML = '<span>WebSocket connection closed</span>';
+		[closeButton, messageInput, sendButton].forEach(e => e.disabled = true);
+		connectButton.disabled = false;
+		ws = null;
+	}
+</script>
+
+	</body>
+</html>

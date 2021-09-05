@@ -39,6 +39,10 @@ public class WebSocket {
 	private OnError error;
 	private OnClose close;
 
+	public WebSocket() {
+		super();
+	}
+
 	public OnText onText() {
 		return this.text;
 	}

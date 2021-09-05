@@ -10,7 +10,10 @@ import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -19,12 +22,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.eclipse.jetty.websocket.api.StatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import fr.techgp.nimbus.server.MimeTypes;
@@ -34,6 +39,12 @@ import fr.techgp.nimbus.server.Response;
 import fr.techgp.nimbus.server.Route;
 import fr.techgp.nimbus.server.Router;
 import fr.techgp.nimbus.server.Utils;
+import fr.techgp.nimbus.server.WebSocket;
+import fr.techgp.nimbus.server.WebSocket.OnClose;
+import fr.techgp.nimbus.server.WebSocket.OnConnect;
+import fr.techgp.nimbus.server.WebSocket.OnText;
+import fr.techgp.nimbus.server.WebSocket.Session;
+import fr.techgp.nimbus.server.render.RenderBytes;
 import fr.techgp.nimbus.utils.IOUtils;
 
 public class WebServerApplication {
@@ -118,6 +129,8 @@ public class WebServerApplication {
 				router.get("/utils/iblocklist", new IBlockList(settings));
 			if ("true".equals(settings.apply("utils.help.enabled", null)))
 				router.get("/utils/help", new Help(settings));
+			if ("true".equals(settings.apply("utils.chat.enabled", null)))
+				Chat.apply(router);
 
 			// Check that requested path is safe
 			router.before("/*", (req, res) -> {
@@ -186,6 +199,8 @@ public class WebServerApplication {
 				sb.append("<a href=\"/utils/moneyrates\">/utils/moneyrates</a> returns € currency conversion as JSON<br />");
 			if ("true".equals(settings.apply("utils.iblocklist.enabled", null)))
 				sb.append("<a href=\"/utils/iblocklist\">/utils/iblocklist</a> merges some iblocklist<br />");
+			if ("true".equals(settings.apply("utils.chat.enabled", null)))
+				sb.append("<a href=\"/utils/chat.html\">/utils/chat.html</a> is a chat WebSocket example<br />");
 			if ("true".equals(settings.apply("utils.help.enabled", null)))
 				sb.append("<a href=\"/utils/help\">/utils/help</a> is this page<br />");
 
@@ -362,6 +377,74 @@ public class WebServerApplication {
 				return Render.internalServerError();
 			}
 		}
+	}
+
+	private static final class Chat implements OnConnect, OnText, OnClose {
+
+		private final Map<Session, String> users = new ConcurrentHashMap<>();
+		private final AtomicInteger counter = new AtomicInteger(1);
+		private RenderBytes html;
+
+		public static void apply(Router router) {
+			Chat chat = new Chat();
+			router.get("/utils/chat.html", (req, res) -> chat.html());
+			router.websocket("/utils/chat.ws", new WebSocket().onConnect(chat).onText(chat).onClose(chat));
+		}
+
+		public Render html() throws IOException {
+			if (this.html == null) {
+				try (InputStream is = Chat.class.getResourceAsStream("/fr/techgp/nimbus/server/chat.html")) {
+					this.html = new RenderBytes(IOUtils.toByteArray(is), MimeTypes.HTML, "chat.html", false);
+				}
+			}
+			return this.html;
+		}
+
+		@Override
+		public void connect(Session session) throws IOException {
+			if (logger.isTraceEnabled())
+				logger.trace("[chat] WebSocket connected " + session);
+			String username = "User" + this.counter.getAndIncrement();
+			this.users.put(session, username);
+			JsonObject o = new JsonObject();
+			o.addProperty("type", "username");
+			o.addProperty("username", username);
+			session.sendText(o.toString());
+			broadcast("Server", username + " has joined the chat");
+		}
+
+		@Override
+		public void text(Session session, String text) throws IOException {
+			if (logger.isDebugEnabled())
+				logger.debug("[chat] WebSocket message " + text);
+			String username = this.users.get(session);
+			broadcast(username, text);
+			if ("bye".equals(text))
+				session.close(StatusCode.SHUTDOWN, "Bye");
+		}
+
+		@Override
+		public void close(Session session, int statusCode, String reason) throws IOException {
+			if (logger.isTraceEnabled())
+				logger.trace("[chat] WebSocket closed " + session);
+			String username = this.users.get(session);
+			this.users.remove(session);
+			broadcast("Server", username + " has left the chat");
+		}
+
+		private void broadcast(String username, String message) throws IOException {
+			JsonArray usernames = this.users.values().stream().collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+			JsonObject o = new JsonObject();
+			o.addProperty("username", username);
+			o.addProperty("message", message);
+			o.add("userlist", usernames);
+			String jsonMessage = o.toString();
+			for (Session peerSession : this.users.keySet()) {
+				if (peerSession.opened())
+					peerSession.sendText(jsonMessage);
+			}
+		}
+
 	}
 
 }
