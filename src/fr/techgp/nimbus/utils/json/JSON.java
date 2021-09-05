@@ -36,6 +36,10 @@ public final class JSON {
 		return JSONNull.INSTANCE;
 	}
 
+	public static final JSONElement checked(JSONElement element) {
+		return element == null ? JSONNull.INSTANCE : element;
+	}
+
 	public static final JSONElement of(Boolean value) {
 		return value == null ? JSONNull.INSTANCE : value.booleanValue() ? JSONBoolean.TRUE_INSTANCE : JSONBoolean.FALSE_INSTANCE;
 	}

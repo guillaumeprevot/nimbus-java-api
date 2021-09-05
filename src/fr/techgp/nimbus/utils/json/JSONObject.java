@@ -12,24 +12,36 @@ public class JSONObject implements JSONElement {
 	}
 
 	public JSONObject set(String property, JSONElement element) {
-		this.children.put(property, element == null ? JSON.ofNull() : element);
-		return this;
+		return this.setChecked(property, JSON.checked(element));
 	}
 
 	public JSONObject set(String property, Boolean value) {
-		return this.set(property, JSON.of(value));
+		return this.setChecked(property, JSON.of(value));
 	}
 
 	public JSONObject set(String property, Number value) {
-		return this.set(property, JSON.of(value));
+		return this.setChecked(property, JSON.of(value));
 	}
 
 	public JSONObject set(String property, String value) {
-		return this.set(property, JSON.of(value));
+		return this.setChecked(property, JSON.of(value));
 	}
 
 	public JSONObject setNull(String property) {
-		return this.set(property, JSON.ofNull());
+		return this.setChecked(property, JSON.ofNull());
+	}
+
+	private JSONObject setChecked(String property, JSONElement element) {
+		this.children.put(property, element);
+		return this;
+	}
+
+	public int size() {
+		return this.children.size();
+	}
+
+	public boolean isEmpty() {
+		return this.children.isEmpty();
 	}
 
 	public boolean has(String property) {
@@ -44,8 +56,9 @@ public class JSONObject implements JSONElement {
 		return this.children.remove(property);
 	}
 
-	public int size() {
-		return this.children.size();
+	public JSONObject clear() {
+		this.children.clear();
+		return this;
 	}
 
 	public Iterable<Map.Entry<String, JSONElement>> iterate() {

@@ -117,3 +117,4 @@ result.asObject().get("array").asArray().size(); // 4
 - 2020-11-09 : version 1.3 (update dependencies and add formula package and utilities)
 - 2021-06-26 : version 1.4 (update dependencies)
 - 2021-09-04 : version 1.5 (update dependencies and add JSON API)
+- 2021-09-05 : version 1.6 (add WebSocket support in routing API + chat POC + JSON improvements)

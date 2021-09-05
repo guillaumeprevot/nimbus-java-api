@@ -43,7 +43,7 @@ public class JSONEncoder implements JSONVisitor {
 	public String encode(JSONElement element) {
 		this.sb.setLength(0);
 		this.depth = 0;
-		element.accept(this);
+		JSON.checked(element).accept(this);
 		return this.sb.toString();
 	}
 

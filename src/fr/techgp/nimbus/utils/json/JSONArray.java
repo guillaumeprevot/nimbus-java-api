@@ -12,35 +12,68 @@ public class JSONArray implements JSONElement {
 	}
 
 	public JSONArray add(JSONElement child) {
-		this.children.add(child == null ? JSON.ofNull() : child);
-		return this;
+		return this.addChecked(JSON.checked(child));
 	}
 
 	public JSONArray addAll(JSONElement... children) {
 		for (JSONElement child : children) {
-			this.children.add(child == null ? JSON.ofNull() : child);
+			this.children.add(JSON.checked(child));
 		}
 		return this;
 	}
 
 	public JSONArray add(Boolean child) {
-		return this.add(JSON.of(child));
+		return this.addChecked(JSON.of(child));
 	}
 
 	public JSONArray add(Number child) {
-		return this.add(JSON.of(child));
+		return this.addChecked(JSON.of(child));
 	}
 
 	public JSONArray add(String child) {
-		return this.add(JSON.of(child));
+		return this.addChecked(JSON.of(child));
 	}
 
 	public JSONArray addNull() {
-		return this.add((JSONElement) null);
+		return this.addChecked(JSON.ofNull());
+	}
+
+	private JSONArray addChecked(JSONElement child) {
+		this.children.add(child);
+		return this;
 	}
 
 	public int size() {
 		return this.children.size();
+	}
+
+	public boolean isEmpty() {
+		return this.children.isEmpty();
+	}
+
+	public boolean has(JSONElement child) {
+		return this.children.contains(JSON.checked(child));
+	}
+
+	public int indexOf(JSONElement child) {
+		return this.children.indexOf(JSON.checked(child));
+	}
+
+	public JSONElement get(int index) {
+		return this.children.get(index);
+	}
+
+	public JSONElement remove(int index) {
+		return this.children.remove(index);
+	}
+
+	public boolean remove(JSONElement child) {
+		return this.children.remove(JSON.checked(child));
+	}
+
+	public JSONArray clear() {
+		this.children.clear();
+		return this;
 	}
 
 	public Iterable<JSONElement> iterate() {
