@@ -19,11 +19,23 @@ public class JSONObject implements JSONElement {
 		return this.setChecked(property, JSON.of(value));
 	}
 
-	public JSONObject set(String property, Number value) {
+	public JSONObject set(String property, boolean value) {
 		return this.setChecked(property, JSON.of(value));
 	}
 
 	public JSONObject set(String property, String value) {
+		return this.setChecked(property, JSON.of(value));
+	}
+
+	public JSONObject set(String property, Number value) {
+		return this.setChecked(property, JSON.of(value));
+	}
+
+	public JSONObject set(String property, long value) {
+		return this.setChecked(property, JSON.of(value));
+	}
+
+	public JSONObject set(String property, double value) {
 		return this.setChecked(property, JSON.of(value));
 	}
 

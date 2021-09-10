@@ -26,11 +26,23 @@ public class JSONArray implements JSONElement {
 		return this.addChecked(JSON.of(child));
 	}
 
-	public JSONArray add(Number child) {
+	public JSONArray add(boolean child) {
 		return this.addChecked(JSON.of(child));
 	}
 
 	public JSONArray add(String child) {
+		return this.addChecked(JSON.of(child));
+	}
+
+	public JSONArray add(Number child) {
+		return this.addChecked(JSON.of(child));
+	}
+
+	public JSONArray add(long child) {
+		return this.addChecked(JSON.of(child));
+	}
+
+	public JSONArray add(double child) {
 		return this.addChecked(JSON.of(child));
 	}
 

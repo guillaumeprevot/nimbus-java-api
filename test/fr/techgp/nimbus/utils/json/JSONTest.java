@@ -15,6 +15,7 @@ public class JSONTest {
 			t.testDecoder();
 			t.testMoreComplexContent();
 			t.testPerformance();
+			t.testStream();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -40,8 +41,8 @@ public class JSONTest {
 		encodeEquals(encoder, JSON.object(), "{}");
 		encodeEquals(encoder, JSON.object().set("a", 12), "{\"a\":12}");
 		encodeEquals(encoder, JSON.object().set("a", 12).set("Autre chose", "Coucou"), "{\"a\":12,\"Autre chose\":\"Coucou\"}");
-		encodeEquals(encoder, JSON.object().set("a", 12).set("Autre chose", "Coucou").setNull("Normallement absente"), "{\"a\":12,\"Autre chose\":\"Coucou\"}");
-		encodeEquals(encoder, JSON.object().set("a", 12).set("b", true).setNull("c").set("d", "e"), "{\"a\":12,\"b\":true,\"d\":\"e\"}");
+		encodeEquals(encoder, JSON.object().set("a", 12).set("Autre chose", "Coucou").setNull("nothing"), "{\"a\":12,\"Autre chose\":\"Coucou\",\"nothing\":null}");
+		encodeEquals(encoder, JSON.object().set("a", 12).set("b", true).setNull("c").set("d", "e"), "{\"a\":12,\"b\":true,\"c\":null,\"d\":\"e\"}");
 		// Formating
 		encodeEquals(encoder, JSON.object(), "{}");
 		encodeEquals(encoder.beautify(), JSON.object(), "{\n}");
@@ -89,6 +90,10 @@ public class JSONTest {
 
 	public void testPerformance() {
 		JSONPerf.execute();
+	}
+
+	public void testStream() {
+		JSONStreamTest.execute();
 	}
 
 	private static final void encodeEquals(JSONEncoder encoder, JSONElement element, String json) {

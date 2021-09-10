@@ -4,25 +4,10 @@ import java.util.Map;
 
 public class JSONEncoder implements JSONVisitor {
 
-	/** @see https://github.com/google/gson/blob/master/gson/src/main/java/com/google/gson/stream/JsonWriter.java */
-	private static final String[] CHAR_REPLACEMENTS = new String[128];
-	static {
-		for (int i = 0; i <= 0x1f; i++) {
-			CHAR_REPLACEMENTS[i] = String.format("\\u%04x", i);
-		}
-		CHAR_REPLACEMENTS['"'] = "\\\"";
-		CHAR_REPLACEMENTS['\\'] = "\\\\";
-		CHAR_REPLACEMENTS['\r'] = "\\r";
-		CHAR_REPLACEMENTS['\n'] = "\\n";
-		CHAR_REPLACEMENTS['\t'] = "\\t";
-		CHAR_REPLACEMENTS['\b'] = "\\b";
-		CHAR_REPLACEMENTS['\f'] = "\\f";
-	}
-
 	private StringBuilder sb = new StringBuilder();
 	private String indent = null;
 	private boolean spaceAfterColumn = false;
-	private boolean encodeNullProperties = false;
+	private boolean encodeNullProperties = true;
 	private int depth;
 
 	public JSONEncoder() {
@@ -125,22 +110,7 @@ public class JSONEncoder implements JSONVisitor {
 	private void encode(String value) {
 		this.sb.append("\"");
 		// needs escaping : this.sb.append(value);
-		int length = value.length();
-		for (int i = 0; i < length; i++) {
-			char c = value.charAt(i);
-			String replacement = null;
-			if (c < 128) {
-				replacement = CHAR_REPLACEMENTS[c];
-			} else if (c == '\u2028') {
-				replacement = "\\u2028";
-			} else if (c == '\u2029') {
-				replacement = "\\u2029";
-			}
-			if (replacement == null)
-				this.sb.append(c);
-			else
-				this.sb.append(replacement);
-		}
+		JSON.escapeTo(value, this.sb);
 		this.sb.append("\"");
 	}
 }

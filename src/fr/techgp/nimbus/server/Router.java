@@ -148,6 +148,16 @@ public class Router {
 		return route(Matcher.Method.POST.and(Matcher.Path.of(path)), route);
 	}
 
+	/** adds a <i>route handler</i> matching the specified "path" and PUT HTTP "method" */
+	public Router put(String path, Route route) {
+		return route(Matcher.Method.PUT.and(Matcher.Path.of(path)), route);
+	}
+
+	/** adds a <i>route handler</i> matching the specified "path" and DELETE HTTP "method" */
+	public Router delete(String path, Route route) {
+		return route(Matcher.Method.DELETE.and(Matcher.Path.of(path)), route);
+	}
+
 	/** adds a <i>route handler</i> that redirects from one path to another, whatever the HTTP method */
 	public Router redirect(String from, String to) {
 		return route(Matcher.Path.is(from), (req, resp) -> Render.redirect(to));

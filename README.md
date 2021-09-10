@@ -37,7 +37,7 @@ JettyServer server = new JettyServer(8443)
 server.stop();
 ```
 
-It should look familiar to those who know [Spark](http://sparkjava.com/), [WebMotion](https://github.com/webmotion-framework/webmotion) or [Express.js](https://expressjs.com/).
+It should look familiar to those who know [Spark](http://sparkjava.com/) (Java), [WebMotion](https://github.com/webmotion-framework/webmotion) (Java), [Express.js](https://expressjs.com/) (JS) or [HttpRouter](https://github.com/julienschmidt/httprouter) (Go).
 
 ## Web Server Application
 
@@ -67,7 +67,10 @@ The default behaviour is this :
     - use `-Dwebserver.pid=another-file.pid` to change it's location
     - this should make termination easier, like ``kill -9 `cat webserver.pid` ``
 
-You can easily customize your server. For instance, to share 2 folders with HTTPS enabled, you could use this configuration :
+You can easily customize your server. For instance, this configuration :
+- enables HTTPS on port 10001 using the specified keystore file
+- shares two folders, one relative path as /public and one absolute path as /public2
+- enables the /utils/chat.html route, a [POC](./doc/chat-application.jpg) of chat application using router's WebSocket support
 
 ```properties
 server.port=10001
@@ -77,6 +80,7 @@ static.0.folder=public
 static.0.prefix=/public
 static.1.folder=/path/to/folder2
 static.1.prefix=/public2
+utils.chat.enabled=true
 ```
 
 ## JSON API
@@ -93,13 +97,29 @@ JSONObject object = JSON.object()
 		.set("boolean", true)
 		.setNull("nullProperty")
 		.set("array", array);
+
 // Encode to a JSON string
 String json = JSON.encode(object);
+
 // Decode a JSON string
 JSONElement result = JSON.decode(json);
 result.isObject(); // true
 result.asObject().has("number"); // true
 result.asObject().get("array").asArray().size(); // 4
+
+// Streaming is also supported
+// {"text":"value","number":2.5,"boolean":true,"nullProperty":null,"array":[1,2]}
+JSONStreamRenderer renderer = new JSONStreamStringRenderer(System.out::print);
+JSON.stream(renderer).objectValue()
+	.name("text").value("value")
+	.name("number").value(2.5)
+	.name("boolean").value(true)
+	.name("nullProperty").nullValue()
+	.name("array").arrayValue()
+		.add(1)
+		.add(2)
+		.end()
+	.end();
 ```
 
 ## CHANGELOG
@@ -118,3 +138,4 @@ result.asObject().get("array").asArray().size(); // 4
 - 2021-06-26 : version 1.4 (update dependencies)
 - 2021-09-04 : version 1.5 (update dependencies and add JSON API)
 - 2021-09-05 : version 1.6 (add WebSocket support in routing API + chat POC + JSON improvements)
+- 2021-09-10 : version 1.7 (add JSON stream API and some minor improvements)
