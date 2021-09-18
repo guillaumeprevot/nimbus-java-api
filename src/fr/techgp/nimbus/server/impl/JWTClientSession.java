@@ -24,6 +24,8 @@ public class JWTClientSession implements ClientSession {
 
 	/** The name of the cookie storing session on the client-side */
 	private static final String CLIENT_SESSION_COOKIE_NAME = "nimbus-client-session";
+	/** The algorithm used to generate the server key for client session signature */
+	private static final String CLIENT_SESSION_KEY_ALGORITHM = "HmacSHA256";
 	/** The source of randomness for session id and encryption */
 	private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -128,7 +130,7 @@ public class JWTClientSession implements ClientSession {
 		Jws<Claims> jwt;
 		try {
 			jwt = Jwts.parserBuilder()
-					.setSigningKey(new SecretKeySpec(secretKey, "HmacSHA256"))
+					.setSigningKey(new SecretKeySpec(secretKey, CLIENT_SESSION_KEY_ALGORITHM))
 					.build()
 					.parseClaimsJws(cookie.value());
 		} catch (JwtException ex) {
@@ -161,7 +163,7 @@ public class JWTClientSession implements ClientSession {
 		if (secretKey == null) {
 			synchronized (config) {
 				if (config.getSecretKey() == null) {
-					secretKey = generateHmacSHA256SecretKey();
+					secretKey = generateClientSessionSecretKey();
 					config.setSecretKey(secretKey);
 					System.out.println("Generated new secret key " + ConversionUtils.bytes2hex(secretKey));
 				}
@@ -176,7 +178,7 @@ public class JWTClientSession implements ClientSession {
 			.setIssuedAt(new Date(session.creationTime))
 			.claim("maxInactiveInterval", Integer.toString(session.maxInactiveInterval))
 			.addClaims(session.attributes)
-			.signWith(new SecretKeySpec(secretKey, "HmacSHA256"))
+			.signWith(new SecretKeySpec(secretKey, CLIENT_SESSION_KEY_ALGORITHM))
 			.compact();
 
 		// Add cookie to response
@@ -190,11 +192,19 @@ public class JWTClientSession implements ClientSession {
 				true);
 	}
 
-	public static final byte[] generateHmacSHA256SecretKey() {
+	public static final byte[] generateClientSessionSecretKey() {
 		try {
-			return KeyGenerator.getInstance("HmacSHA256").generateKey().getEncoded();
+			return KeyGenerator.getInstance(CLIENT_SESSION_KEY_ALGORITHM).generateKey().getEncoded();
 		} catch (NoSuchAlgorithmException ex) {
 			throw new RuntimeException("Expected algorithm is non supported", ex);
+		}
+	}
+
+	public static void main(String[] args) {
+		if (args.length == 1 && "generateKey".equals(args[0])) {
+			byte[] keyBytes = generateClientSessionSecretKey();
+			String keyString = ConversionUtils.bytes2hex(keyBytes);
+			System.out.println(keyString);
 		}
 	}
 

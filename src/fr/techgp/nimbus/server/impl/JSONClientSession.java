@@ -43,6 +43,8 @@ public class JSONClientSession implements ClientSession {
 
 	/** The name of the cookie storing session on the client-side */
 	private static final String CLIENT_SESSION_COOKIE_NAME = "nimbus-client-session";
+	/** The algorithm used to generate the server key for client session signature */
+	private static final String CLIENT_SESSION_KEY_ALGORITHM = "HmacSHA256";
 	/** The source of randomness for session id and encryption */
 	private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -247,8 +249,8 @@ public class JSONClientSession implements ClientSession {
 			byte[] encryptedData = cipher.doFinal(data);
 
 			// Calculate HMAC signature : HMAC(secretKey, iv | timestamp | encryptedData)
-			SecretKeySpec hmacKeySpec = new SecretKeySpec(key, "HmacSHA256");
-			Mac mac = Mac.getInstance("HmacSHA256");
+			SecretKeySpec hmacKeySpec = new SecretKeySpec(key, CLIENT_SESSION_KEY_ALGORITHM);
+			Mac mac = Mac.getInstance(CLIENT_SESSION_KEY_ALGORITHM);
 			mac.init(hmacKeySpec);
 			mac.update(iv);
 			mac.update(timestampBytes);
@@ -277,8 +279,8 @@ public class JSONClientSession implements ClientSession {
 			byte[] encryptedData = ConversionUtils.hex2bytes(parts[3]);
 
 			// Verify HMAC signature : HMAC(secretKey, iv | timestamp | encryptedData)
-			SecretKeySpec hmacKeySpec = new SecretKeySpec(key, "HmacSHA256");
-			Mac mac = Mac.getInstance("HmacSHA256");
+			SecretKeySpec hmacKeySpec = new SecretKeySpec(key, CLIENT_SESSION_KEY_ALGORITHM);
+			Mac mac = Mac.getInstance(CLIENT_SESSION_KEY_ALGORITHM);
 			mac.init(hmacKeySpec);
 			mac.update(iv);
 			mac.update(timestampBytes);
