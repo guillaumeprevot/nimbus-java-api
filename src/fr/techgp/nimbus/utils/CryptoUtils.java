@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.crypto.SecretKeyFactory;
@@ -97,12 +98,13 @@ public final class CryptoUtils {
 	/**
 	 * Le nom d'itérations. Plus c'est grand, mieux c'est mais attention car c'est aussi plus long :
 	 *
-	 * -   1 000 dans la spec et jusqu'à récemment
+	 * -   1 000 dans la spec et jusqu'à au départ
 	 * -   1 000 à 2 000 pour TrueCrypt (en version 7.1a)
-	 * -  10 000 dorénavant (comme décrit ici depuis 2016 : https://pages.nist.gov/800-63-3/sp800-63b.html)
+	 * -  10 000 comme décrit ici depuis 2016 (https://pages.nist.gov/800-63-3/sp800-63b.html) et jusqu'à récemment
+	 * -  99 000 dorénavant
 	 * - 200 000 minimum pour VeraCrypt (mais un peu trop long !)
 	 */
-	public static final int PASSWORD_HASH_CURRENT_ITERATIONS = 10_000;
+	public static final int PASSWORD_HASH_CURRENT_ITERATIONS = 99_000;
 
 	/**
 	 * Le sel de 512 bits (64 octets), généré aléatoirement pour se protéger d'une "rainbow table"
@@ -119,14 +121,15 @@ public final class CryptoUtils {
 	 * de ralentir l'attaque "brute-force".
 	 *
 	 * - PBKDF2WithHmacSHA1 dans la spéc
-	 * - PBKDF2WithHmacSHA256 augmenterait l'empreinte mémoire pour minimiser les attaques avec matériel spécifique (GPU / ASIC)
+	 * - PBKDF2WithHmacSHA256 augmente l'empreinte mémoire pour minimiser les attaques avec matériel spécifique (GPU / ASIC)
 	 */
-	public static final String PASSWORD_HASH_ALGORITHM = "PBKDF2WithHmacSHA1";
+	public static final String PASSWORD_HASH_ALGORITHM = "PBKDF2WithHmacSHA256";
 
 	/**
-	 * La longueur du hash généré par {@link CryptoUtils#PASSWORD_HASH_ALGORITHM}.
+	 * La longueur souhaitée du hash à générer par {@link CryptoUtils#PASSWORD_HASH_ALGORITHM}.
 	 *
-	 * - PBKDF2WithHmacSHA1 génère des hash de 64 octets (128 caractères en hexa)
+	 * NB : Alors que SHA-1 génère des hash de 20 octets et SHA-256 génère des hash de 32 octets, on peut demander
+	 * à PBKDF2WithHmacSHA1 ou PBKDF2WithHmacSHA256 de générer des hash de 64 octets (128 caractères en hexa).
 	 */
 	public static final int PASSWORD_HASH_BYTES = 64;
 
@@ -135,7 +138,7 @@ public final class CryptoUtils {
 	 * et permettant plus tard de vérifier une tentative d'authentification.
 	 *
 	 * @param password le mot de passe à hasher pour être stocké
-	 * @return une chaine de la forme iterations + ":" + hex(salt) + ":" + hex(PBKDF2WithHmacSHA1(password, salt, iterations))
+	 * @return une chaine de la forme iterations + ":" + hex(salt) + ":" + hex(PBKDF2WithHmacSHA???(password, salt, iterations))
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidKeySpecException
 	 */
@@ -164,21 +167,23 @@ public final class CryptoUtils {
 	 * </ol>
 	 *
 	 * @param testedPassword le mot de passe à tester
-	 * @param storedPassword un hash de la forme iterations + ":" + hex(salt) + ":" + hex(PBKDF2WithHmacSHA1(password, salt, iterations))
+	 * @param storedPassword un hash de la forme iterations + ":" + hex(salt) + ":" + hex(PBKDF2WithHmacSHA???(password, salt, iterations))
+	 * @param algorithm PBKDF2WithHmacSHA1, PBKDF2WithHmacSHA256, ou juste null pour utiliser l'algo actuel {@link CryptoUtils#PASSWORD_HASH_ALGORITHM}
 	 * @param errorHandler un gestionnaire pour des erreurs inattendues (normalement, aucune ne devrait être lancée)
 	 * @return true si testedPassword est le bon mot de passe
 	 */
-	public static final boolean validatePassword(final String testedPassword, final String storedPassword, Consumer<Exception> errorHandler) {
+	public static final boolean validatePassword(final String testedPassword, final String storedPassword, final String algorithm, Consumer<Exception> errorHandler) {
 		try {
 			// Extraire les informations depuis le hash donnée, de la forme "iterations:saltHex:hashHex"
 			String[] parts = storedPassword.split(":");
 			int iterations = Integer.parseInt(parts[0]);
 			byte[] salt = ConversionUtils.hex2bytes(parts[1]);
 			byte[] hash = ConversionUtils.hex2bytes(parts[2]);
+			String alg = Optional.ofNullable(algorithm).orElse(PASSWORD_HASH_ALGORITHM);
 
 			// Calculer le hash pour le mot de passe à tester
 			PBEKeySpec spec = new PBEKeySpec(testedPassword.toCharArray(), salt, iterations, hash.length * 8);
-			SecretKeyFactory skf = SecretKeyFactory.getInstance(PASSWORD_HASH_ALGORITHM);
+			SecretKeyFactory skf = SecretKeyFactory.getInstance(alg);
 			byte[] testedHash = skf.generateSecret(spec).getEncoded();
 
 			// Comparer les 2 hash en temps constant
