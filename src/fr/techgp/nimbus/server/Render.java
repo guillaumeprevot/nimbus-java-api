@@ -151,6 +151,11 @@ public interface Render {
 		return new RenderStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Server Error"); // 500
 	}
 
+	/** wrapper for the 501 response with "Not Implemented" body */
+	public static Render notImplemented() {
+		return new RenderStatus(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not Implemented"); // 501
+	}
+
 	/** wrapper for the 507 response with "Insufficient Storage" body */
 	public static Render insufficientStorage() {
 		return new RenderStatus(507, "Insufficient Storage"); // Détourné de WEBDAV : https://tools.ietf.org/html/rfc4918#section-11.5
