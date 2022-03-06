@@ -52,7 +52,7 @@ public final class WebUtils {
 		try {
 			HttpURLConnection connection = openURL(url);
 			try (InputStream stream = connection.getInputStream()) {
-				return IOUtils.toStringUTF8(stream);
+				return IOUtils.toUTF8String(stream);
 			}
 		} catch (IOException ex) {
 			return null;

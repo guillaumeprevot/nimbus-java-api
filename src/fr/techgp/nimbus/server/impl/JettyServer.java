@@ -85,11 +85,25 @@ public class JettyServer {
 		// Create server
 		Server server = new Server();
 
-		// Add connector
-		ServerConnector connector = createConnector(server, keystore, keystorePassword);
-		// Utilisation de MultiPartFormInputStream (rapide) au lieu de MultiPartInputStreamParser (legacy)
+		// Create connector, with optional HTTPS
+		ServerConnector connector;
+		if (keystore != null) {
+			SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
+			sslContextFactory.setKeyStorePath(keystore);
+			if (keystorePassword != null)
+				sslContextFactory.setKeyStorePassword(keystorePassword);
+			connector = new ServerConnector(server, sslContextFactory);
+		} else {
+			connector = new ServerConnector(server);
+		}
+
+		// Activate fast MultiPartFormInputStream rather than legacy MultiPartInputStreamParser
 		// https://webtide.com/fast-multipart-formdata/
-		connector.getConnectionFactory(HttpConnectionFactory.class).getHttpConfiguration().setMultiPartFormDataCompliance(MultiPartFormDataCompliance.RFC7578);
+		// This setting is important in JettyOptimizedUpload to ensure an optimal upload's handling
+		HttpConnectionFactory cf = connector.getConnectionFactory(HttpConnectionFactory.class);
+		cf.getHttpConfiguration().setMultiPartFormDataCompliance(MultiPartFormDataCompliance.RFC7578);
+
+		// Register the connector with the specified port number
 		connector.setPort(port);
 		server.setConnectors(new Connector[] { connector });
 
@@ -111,18 +125,6 @@ public class JettyServer {
 		server.start();
 		// server.join();
 		return server;
-	}
-
-	/** This method creates an HTTPS connector if a keystore is specified, or an HTTP connector otherwise. */
-	protected static final ServerConnector createConnector(Server server, String keystore, String keystorePassword) {
-		if (keystore != null) {
-			SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-			sslContextFactory.setKeyStorePath(keystore);
-			if (keystorePassword != null)
-				sslContextFactory.setKeyStorePassword(keystorePassword);
-			return new ServerConnector(server, sslContextFactory);
-		}
-		return new ServerConnector(server);
 	}
 
 	/** This static method can extend {@link MimeTypes} to include Jetty in MIME type detection */

@@ -70,7 +70,7 @@ public final class IOUtils {
 	 * @return la chaine de caractères UTF-8  lue dans le flux
 	 * @throws IOException
 	 */
-	public static final String toStringUTF8(final InputStream is) throws IOException {
+	public static final String toUTF8String(final InputStream is) throws IOException {
 		return new String(toByteArray(is), StandardCharsets.UTF_8);
 	}
 

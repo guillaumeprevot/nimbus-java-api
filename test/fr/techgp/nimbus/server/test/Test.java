@@ -77,7 +77,7 @@ public class Test {
 			throw new Exception("Mauvais longueur " + connection.getContentLength());
 		if (this.status < 400 && this.body != null) {
 			try (InputStream is = connection.getInputStream()) {
-				if (!this.body.equals(IOUtils.toStringUTF8(is)))
+				if (!this.body.equals(IOUtils.toUTF8String(is)))
 					throw new Exception("Mauvais contenu " + connection.getContent());
 			}
 		}

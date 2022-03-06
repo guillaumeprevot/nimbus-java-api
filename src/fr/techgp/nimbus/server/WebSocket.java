@@ -147,7 +147,7 @@ public class WebSocket {
 		ws.onBinary((session, message) -> {
 			ByteBuffer answer = handler.apply(session, message);
 			if (answer != null)
-					session.sendBinary(answer);
+				session.sendBinary(answer);
 		});
 		return ws;
 	}

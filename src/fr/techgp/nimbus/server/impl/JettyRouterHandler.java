@@ -93,6 +93,7 @@ public class JettyRouterHandler extends SessionHandler {
 			// Reply 500 for exceptions
 			res.body(Render.throwable(ex));
 		}
+		// TODO res.body() ne peut pas être null si on arrive ici
 		if (res.body() == null)
 			return; // next handler
 

@@ -322,7 +322,7 @@ public class MethodRoute implements Route {
 			Upload u = request.upload(name);
 			if (u != null) {
 				try (InputStream is = u.getInputStream()) {
-					s = IOUtils.toStringUTF8(is);
+					s = IOUtils.toUTF8String(is);
 				} catch (IOException ex) {
 					throw new RuntimeException(ex);
 				}
