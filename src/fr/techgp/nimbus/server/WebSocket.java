@@ -2,6 +2,7 @@ package fr.techgp.nimbus.server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -155,8 +156,8 @@ public class WebSocket {
 	/** This interface represents a WebSocket session */
 	public static interface Session {
 
-		public long idleTimeout();
-		public void idleTimeout(long timeout);
+		public Duration idleTimeout();
+		public void idleTimeout(Duration timeout);
 
 		public boolean opened();
 		public void close(int statusCode, String reason);

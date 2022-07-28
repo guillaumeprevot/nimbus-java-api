@@ -1,6 +1,6 @@
 package fr.techgp.nimbus.server.impl;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import fr.techgp.nimbus.server.Session.ServerSession;
 

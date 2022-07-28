@@ -4,7 +4,7 @@
 	<groupId>fr.techgp.nimbus</groupId>
 	<artifactId>nimbus-java-api</artifactId>
 	<packaging>jar</packaging>
-	<version>1.10</version>
+	<version>1.11</version>
 	<name>Nimbus Java API</name>
 
 	<properties>
@@ -15,31 +15,36 @@
 
 	<dependencies>
 		<!--
+			Servlet API 5.0+ moved from "javax.servlet" to "jakarta.servlet"
+			https://github.com/jakartaee/servlet
+			https://search.maven.org/artifact/jakarta.servlet/jakarta.servlet-api
+		-->
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>5.0.0</version>
+		</dependency>
+
+		<!--
 			https://www.eclipse.org/jetty/
 			https://search.maven.org/artifact/org.eclipse.jetty/jetty-server
-			https://search.maven.org/artifact/org.eclipse.jetty/jetty-webapp
-			https://search.maven.org/artifact/org.eclipse.jetty.websocket/websocket-server
-			https://search.maven.org/artifact/org.eclipse.jetty.websocket/websocket-servlet
+			https://search.maven.org/artifact/org.eclipse.jetty.websocket/websocket-jetty-api
+			https://search.maven.org/artifact/org.eclipse.jetty.websocket/websocket-jetty-server
 		-->
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>9.4.45.v20220203</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-webapp</artifactId>
-			<version>9.4.45.v20220203</version>
+			<version>11.0.11</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-server</artifactId>
-			<version>9.4.45.v20220203</version>
+			<artifactId>websocket-jetty-api</artifactId>
+			<version>11.0.11</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-servlet</artifactId>
-			<version>9.4.45.v20220203</version>
+			<artifactId>websocket-jetty-server</artifactId>
+			<version>11.0.11</version>
 		</dependency>
 
 		<!--
@@ -88,18 +93,18 @@
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
-			<version>0.11.2</version>
+			<version>0.11.5</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
-			<version>0.11.2</version>
+			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-gson</artifactId>
-			<version>0.11.2</version>
+			<version>0.11.5</version>
 		</dependency>
 	</dependencies>
 

@@ -36,7 +36,7 @@ public class Test {
 	private String method = "GET";
 	private ConsumerWithException<HttpURLConnection, Exception> customizer;
 	private int status = 200;
-	private String mimetype = "text/html;charset=utf-8";
+	private String mimetype = "text/html";
 	private int length = -1;
 	private String body = null;
 	private boolean before1 = true;
@@ -209,7 +209,7 @@ public class Test {
 
 	private static final void runAllTests() throws Exception {
 		// No matching routes should return 404 Not Found
-		get("/notfound").status(404).run();
+		get("/notfound").status(404).mimetype(MimeTypes.TEXT).run();
 		// Server side error should return 500 Internal Server Error with stack trace as text/plain and skipping "after" filters
 		get("/error").status(500).mimetype(MimeTypes.TEXT).filters(true, false, false).run();
 		// Matching empty route return an empty body
@@ -217,7 +217,7 @@ public class Test {
 		// Calling "hello" should return the 5-bytes "world" text and should match all three filters
 		get("/hello").length(5).body("world").filters(true, true, true).run();
 		// Calling valid path "/bytes" but with wrong method should return 404 Not Found
-		post("/bytes").status(404).length("Not Found".length()).run();
+		post("/bytes").status(404).mimetype(MimeTypes.TEXT).length("Not Found".length()).run();
 		// Calling valid path "/bytes" with valid method should return "bytes" as application/octet-stream and inline file attachment
 		get("/bytes").body("bytes").mimetype(MimeTypes.BINARY).header("Content-Disposition", "inline; filename=\"data.bin\"").run();
 		// Calling a route without method restriction should be "OK" with "PUT" method

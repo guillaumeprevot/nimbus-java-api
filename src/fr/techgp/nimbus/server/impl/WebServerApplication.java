@@ -18,9 +18,10 @@ import java.util.function.BiFunction;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.websocket.api.StatusCode;
 import org.slf4j.Logger;

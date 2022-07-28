@@ -1,6 +1,6 @@
 package fr.techgp.nimbus.server.impl;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import fr.techgp.nimbus.server.Render;
 import fr.techgp.nimbus.server.Response;

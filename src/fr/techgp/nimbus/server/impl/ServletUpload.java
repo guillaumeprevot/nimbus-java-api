@@ -3,7 +3,7 @@ package fr.techgp.nimbus.server.impl;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.servlet.http.Part;
+import jakarta.servlet.http.Part;
 
 import fr.techgp.nimbus.server.Upload;
 

@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.function.Supplier;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import fr.techgp.nimbus.server.MimeTypes;
 import fr.techgp.nimbus.server.Render;

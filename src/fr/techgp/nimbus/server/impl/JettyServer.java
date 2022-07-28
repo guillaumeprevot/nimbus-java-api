@@ -3,16 +3,21 @@ package fr.techgp.nimbus.server.impl;
 import java.security.InvalidParameterException;
 import java.util.Set;
 
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.SessionTrackingMode;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.SessionTrackingMode;
 
+import org.eclipse.jetty.http.HttpCookie.SameSite;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.MultiPartFormDataCompliance;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer;
 
 import fr.techgp.nimbus.server.MimeTypes;
 import fr.techgp.nimbus.server.Router;
@@ -108,18 +113,27 @@ public class JettyServer {
 		server.setConnectors(new Connector[] { connector });
 
 		// Add handler
-		JettyRouterHandler handler = new JettyRouterHandler(router, multipart, session);
+		ServletContextHandler handler = new ServletContextHandler(server, "/*");
 		server.setHandler(handler);
 
+		// Ensure that JettyWebSocketServletContainerInitializer is initialized,
+		// to setup the JettyWebSocketServerContainer for this web application context.
+		JettyWebSocketServletContainerInitializer.configure(handler, null);
+
+		// Add router Servlet
+		handler.addServlet(new ServletHolder(new JettyRouterServlet(router, multipart, session)), "/*");
+
 		// Configure session management
-		// https://www.eclipse.org/jetty/documentation/9.2.22.v20170531/session-management.html
-		handler.setSessionTrackingModes(Set.of(SessionTrackingMode.COOKIE));
-		handler.getSessionCookieConfig().setName("nimbus-server-session"); // instead of JSESSIONID
-		handler.getSessionCookieConfig().setHttpOnly(true); // no usage in JavaScript
-		handler.getSessionCookieConfig().setSecure(true); // if HTTPS is enabled
-		handler.getSessionCookieConfig().setMaxAge(session.getTimeout());
-		handler.getSessionCookieConfig().setPath(session.getCookiePath());
-		handler.getSessionCookieConfig().setDomain(session.getCookieDomain());
+		SessionHandler shandler = new SessionHandler();
+		shandler.setSessionTrackingModes(Set.of(SessionTrackingMode.COOKIE));
+		shandler.getSessionCookieConfig().setName("nimbus-server-session"); // instead of JSESSIONID
+		shandler.getSessionCookieConfig().setHttpOnly(true); // no usage in JavaScript
+		shandler.getSessionCookieConfig().setSecure(true); // if HTTPS is enabled
+		shandler.getSessionCookieConfig().setMaxAge(session.getTimeout());
+		shandler.getSessionCookieConfig().setPath(session.getCookiePath());
+		shandler.getSessionCookieConfig().setDomain(session.getCookieDomain());
+		shandler.setSameSite(SameSite.STRICT);
+		handler.setSessionHandler(shandler);
 
 		// Start
 		server.start();

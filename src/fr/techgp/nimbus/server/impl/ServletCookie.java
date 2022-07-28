@@ -6,19 +6,19 @@ import fr.techgp.nimbus.server.Cookie;
 
 public class ServletCookie implements Cookie {
 
-	private final javax.servlet.http.Cookie cookie;
+	private final jakarta.servlet.http.Cookie cookie;
 
 	public ServletCookie(String name, String value) {
 		super();
-		this.cookie = new javax.servlet.http.Cookie(name, value);
+		this.cookie = new jakarta.servlet.http.Cookie(name, value);
 	}
 
-	public ServletCookie(javax.servlet.http.Cookie cookie) {
+	public ServletCookie(jakarta.servlet.http.Cookie cookie) {
 		super();
 		this.cookie = cookie;
 	}
 
-	public javax.servlet.http.Cookie raw() {
+	public jakarta.servlet.http.Cookie raw() {
 		return this.cookie;
 	}
 

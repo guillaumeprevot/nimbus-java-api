@@ -2,6 +2,7 @@ package fr.techgp.nimbus.server.impl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.function.Consumer;
 
 import org.eclipse.jetty.websocket.api.Session;
@@ -20,12 +21,12 @@ public class JettyWebSocketSession implements WebSocket.Session {
 	}
 
 	@Override
-	public long idleTimeout() {
+	public Duration idleTimeout() {
 		return this.session.getIdleTimeout();
 	}
 
 	@Override
-	public void idleTimeout(long timeout) {
+	public void idleTimeout(Duration timeout) {
 		this.session.setIdleTimeout(timeout);
 	}
 

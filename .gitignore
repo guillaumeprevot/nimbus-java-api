@@ -8,3 +8,4 @@
 /lib/*.jar
 /target/
 /pom.tree.txt
+/bin/

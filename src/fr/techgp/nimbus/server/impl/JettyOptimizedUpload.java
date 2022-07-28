@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.StandardCopyOption;
 
-import javax.servlet.http.Part;
+import jakarta.servlet.http.Part;
 
-import org.eclipse.jetty.http.MultiPartFormInputStream;
+import org.eclipse.jetty.server.MultiPartFormInputStream;
 
 public class JettyOptimizedUpload extends ServletUpload {
 

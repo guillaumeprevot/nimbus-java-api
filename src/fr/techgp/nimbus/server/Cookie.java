@@ -1,6 +1,6 @@
 package fr.techgp.nimbus.server;
 
-/** This is an interface for a cookie matching the class {@link javax.servlet.http.Cookie} */
+/** This is an interface for a cookie matching the class {@link jakarta.servlet.http.Cookie} */
 public interface Cookie {
 
 	/** returns the name of the cookie */
