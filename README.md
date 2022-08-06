@@ -31,6 +31,7 @@ JettyServer server = new JettyServer(8443)
 	.https("/path/to/keystore/file", "KeystorePassword")
 	.multipart("/path/to/upload/temp/folder", ...)
 	.session(secretKey, timeout, ...)
+	.errors(showStackTraces)
 	.start(router);
 
 // ...
@@ -143,3 +144,4 @@ JSON.stream(renderer).objectValue()
 - 2022-02-27 : version 1.9 (update dependencies, update to Java 17 and add Render.notImplemented())
 - 2022-03-06 : version 1.10 (refactor the code about file upload, simplify and fix a few typos)
 - 2022-07-28 : version 1.11 (migration to major versions of Jetty 11 and Servlet API 5, and minor update of JJWT 0.11.5)
+- 2022-08-06 - version 1.12 (fix ServletContextHandler path, add new StackTrace configuration, update GSON 2.9.1 and licence)

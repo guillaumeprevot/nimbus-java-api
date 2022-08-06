@@ -25,11 +25,13 @@ public class JettyRouterServlet extends HttpServlet {
 	private final Router router;
 	private final MultipartConfigElement multipart;
 	private final SessionConfig session;
+	private final boolean showStackTraces;
 
-	public JettyRouterServlet(Router router, MultipartConfigElement multipart, SessionConfig session) throws Exception {
+	public JettyRouterServlet(Router router, MultipartConfigElement multipart, SessionConfig session, boolean showStackTraces) throws Exception {
 		this.router = router;
 		this.multipart = multipart;
 		this.session = session;
+		this.showStackTraces = showStackTraces;
 	}
 
 	@Override
@@ -76,7 +78,10 @@ public class JettyRouterServlet extends HttpServlet {
 
 		} catch (Exception ex) {
 			// Reply 500 for exceptions
-			res.body(Render.throwable(ex));
+			if (this.showStackTraces)
+				res.body(Render.throwable(ex));
+			else
+				res.body(Render.string(ex.toString()));
 		}
 
 		// Save client session, if any

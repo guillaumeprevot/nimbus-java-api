@@ -36,6 +36,7 @@ public class JettyServer {
 	private String keystorePassword;
 	private MultipartConfigElement multipart = null;
 	private SessionConfig session = new SessionConfig();
+	private boolean showStackTraces = false;
 	private Server server;
 
 	/** creates a Jetty server wrapper that will use the specified port when started */
@@ -71,9 +72,15 @@ public class JettyServer {
 		return this;
 	}
 
+	/** then configures error management (limited to stack traces for now) */
+	public JettyServer errors(boolean showStackTraces) {
+		this.showStackTraces = showStackTraces;
+		return this;
+	}
+
 	/** starts the Jetty server using with a special {@link Handler} that will use the {@link Router} to handle requests */
 	public JettyServer start(Router router) throws Exception {
-		this.server = createAndStartServer(router, this.port, this.keystoreFile, this.keystorePassword, this.multipart, this.session);
+		this.server = createAndStartServer(router, this.port, this.keystoreFile, this.keystorePassword, this.multipart, this.session, this.showStackTraces);
 		return this;
 	}
 
@@ -86,7 +93,7 @@ public class JettyServer {
 
 	/** This method creates a Jetty {@link Server} using specified handler and port and optional keystore */
 	@SuppressWarnings("resource")
-	protected static final Server createAndStartServer(Router router, int port, String keystore, String keystorePassword, MultipartConfigElement multipart, SessionConfig session) throws Exception {
+	protected static final Server createAndStartServer(Router router, int port, String keystore, String keystorePassword, MultipartConfigElement multipart, SessionConfig session, boolean showStackTraces) throws Exception {
 		// Create server
 		Server server = new Server();
 
@@ -113,7 +120,7 @@ public class JettyServer {
 		server.setConnectors(new Connector[] { connector });
 
 		// Add handler
-		ServletContextHandler handler = new ServletContextHandler(server, "/*");
+		ServletContextHandler handler = new ServletContextHandler(server, "/");
 		server.setHandler(handler);
 
 		// Ensure that JettyWebSocketServletContainerInitializer is initialized,
@@ -121,7 +128,7 @@ public class JettyServer {
 		JettyWebSocketServletContainerInitializer.configure(handler, null);
 
 		// Add router Servlet
-		handler.addServlet(new ServletHolder(new JettyRouterServlet(router, multipart, session)), "/*");
+		handler.addServlet(new ServletHolder(new JettyRouterServlet(router, multipart, session, showStackTraces)), "/*");
 
 		// Configure session management
 		SessionHandler shandler = new SessionHandler();
