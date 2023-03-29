@@ -2,6 +2,7 @@ package fr.techgp.nimbus.server.impl;
 
 import java.security.InvalidParameterException;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.SessionTrackingMode;
@@ -9,8 +10,10 @@ import jakarta.servlet.SessionTrackingMode;
 import org.eclipse.jetty.http.HttpCookie.SameSite;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.MultiPartFormDataCompliance;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.session.SessionHandler;
@@ -34,6 +37,7 @@ public class JettyServer {
 	private int port;
 	private String keystoreFile;
 	private String keystorePassword;
+	private Consumer<Request> invalidSNIHandler;
 	private MultipartConfigElement multipart = null;
 	private SessionConfig session = new SessionConfig();
 	private boolean showStackTraces = false;
@@ -48,6 +52,12 @@ public class JettyServer {
 	public JettyServer https(String keystoreFile, String keystorePassword) {
 		this.keystoreFile = keystoreFile;
 		this.keystorePassword = keystorePassword;
+		return this;
+	}
+
+	/** then configures an optional "Invalid SNI" error handler **/
+	public JettyServer invalidSNIHandler(Consumer<Request> invalidSNIHandler) {
+		this.invalidSNIHandler = invalidSNIHandler;
 		return this;
 	}
 
@@ -80,7 +90,7 @@ public class JettyServer {
 
 	/** starts the Jetty server using with a special {@link Handler} that will use the {@link Router} to handle requests */
 	public JettyServer start(Router router) throws Exception {
-		this.server = createAndStartServer(router, this.port, this.keystoreFile, this.keystorePassword, this.multipart, this.session, this.showStackTraces);
+		this.server = createAndStartServer(router, this.port, this.keystoreFile, this.keystorePassword, this.invalidSNIHandler, this.multipart, this.session, this.showStackTraces);
 		return this;
 	}
 
@@ -93,18 +103,24 @@ public class JettyServer {
 
 	/** This method creates a Jetty {@link Server} using specified handler and port and optional keystore */
 	@SuppressWarnings("resource")
-	protected static final Server createAndStartServer(Router router, int port, String keystore, String keystorePassword, MultipartConfigElement multipart, SessionConfig session, boolean showStackTraces) throws Exception {
+	protected static final Server createAndStartServer(Router router, int port, String keystore, String keystorePassword, Consumer<Request> invalidSNIHandler,
+			MultipartConfigElement multipart, SessionConfig session, boolean showStackTraces) throws Exception {
 		// Create server
 		Server server = new Server();
 
 		// Create connector, with optional HTTPS
 		ServerConnector connector;
 		if (keystore != null) {
+			HttpConfiguration httpConfiguration = new HttpConfiguration();
+			if (invalidSNIHandler != null)
+				httpConfiguration.addCustomizer(new JettyCustomSecureRequestCustomizer(invalidSNIHandler));
+			HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfiguration);
+
 			SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
 			sslContextFactory.setKeyStorePath(keystore);
 			if (keystorePassword != null)
 				sslContextFactory.setKeyStorePassword(keystorePassword);
-			connector = new ServerConnector(server, sslContextFactory);
+			connector = new ServerConnector(server, sslContextFactory, httpConnectionFactory);
 		} else {
 			connector = new ServerConnector(server);
 		}

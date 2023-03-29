@@ -104,6 +104,7 @@ public class WebServerApplication {
 			String keystore = settings.apply("server.keystore", null);
 			if (keystore != null)
 				server.https(keystore, settings.apply("server.keystore.password", null));
+			server.invalidSNIHandler((req) -> logger.warn("[" + req.getRemoteAddr() + "] Invalid SNI : " + req.getPathInfo()));
 
 			// Routes
 			Router router = new Router();
@@ -365,7 +366,7 @@ public class WebServerApplication {
 				File file = new File(this.folder, path.substring(this.prefix.length()));
 
 				// Vérifier que le fichier existe et passer à la Route suivante sinon
-				if (!file.exists())
+				if (!file.exists() || !file.isFile())
 					return null;
 
 				// Renvoyer le fichier avec le bon type MIME et en fonction du cache
