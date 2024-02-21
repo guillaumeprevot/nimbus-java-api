@@ -1,13 +1,9 @@
 package fr.techgp.nimbus.server.impl;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.crypto.KeyGenerator;
-import javax.crypto.spec.SecretKeySpec;
 
 import fr.techgp.nimbus.server.Session.ClientSession;
 import fr.techgp.nimbus.utils.ConversionUtils;
@@ -16,6 +12,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.MacAlgorithm;
 
 /**
  * Implementation of a session stored in a JWT on the client side.
@@ -25,7 +23,7 @@ public class JWTClientSession implements ClientSession {
 	/** The name of the cookie storing session on the client-side */
 	private static final String CLIENT_SESSION_COOKIE_NAME = "nimbus-client-session";
 	/** The algorithm used to generate the server key for client session signature */
-	private static final String CLIENT_SESSION_KEY_ALGORITHM = "HmacSHA256";
+	private static final MacAlgorithm CLIENT_SESSION_KEY_ALGORITHM = Jwts.SIG.HS256;
 	/** The source of randomness for session id and encryption */
 	private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -129,27 +127,28 @@ public class JWTClientSession implements ClientSession {
 		// Decode the JWT
 		Jws<Claims> jwt;
 		try {
-			jwt = Jwts.parserBuilder()
-					.setSigningKey(new SecretKeySpec(secretKey, CLIENT_SESSION_KEY_ALGORITHM))
+			jwt = Jwts.parser()
+					.verifyWith(Keys.hmacShaKeyFor(secretKey))
 					.build()
-					.parseClaimsJws(cookie.value());
+					.parseSignedClaims(cookie.value());
 		} catch (JwtException ex) {
 			// JWT has expired or has been tempered with
 			return create ? new JWTClientSession(request) : null;
 		}
 
 		// Restore session, update "lastAccessedTime" and keep current "maxInactiveInterval"
-		Claims claims = jwt.getBody();
+		Claims claims = jwt.getPayload();
 		String id = claims.getId();
 		long creationTime = claims.getIssuedAt().getTime();
 		long lastAccessedTime = System.currentTimeMillis();
 		int maxInactiveInterval = Integer.parseInt((String) claims.get("maxInactiveInterval"));
-		claims.remove(Claims.ID);
-		claims.remove(Claims.EXPIRATION);
-		claims.remove(Claims.ISSUER);
-		claims.remove(Claims.ISSUED_AT);
-		claims.remove("maxInactiveInterval");
-		return new JWTClientSession(request, id, creationTime, lastAccessedTime, maxInactiveInterval, claims);
+		HashMap<String, Object> attributes = new HashMap<>(claims); // Claims is now Immutable, copy before removing
+		attributes.remove(Claims.ID);
+		attributes.remove(Claims.EXPIRATION);
+		attributes.remove(Claims.ISSUER);
+		attributes.remove(Claims.ISSUED_AT);
+		attributes.remove("maxInactiveInterval");
+		return new JWTClientSession(request, id, creationTime, lastAccessedTime, maxInactiveInterval, attributes);
 	}
 
 	protected static void save(JWTClientSession session, ServletResponse response) {
@@ -171,14 +170,17 @@ public class JWTClientSession implements ClientSession {
 		}
 
 		// Encode cookie
+
 		String value = Jwts.builder()
-			.setId(session.id())
-			.setExpiration(new Date(session.lastAccessedTime() + session.maxInactiveInterval() * 1000))
-			.setIssuer("Nimbus")
-			.setIssuedAt(new Date(session.creationTime))
-			.claim("maxInactiveInterval", Integer.toString(session.maxInactiveInterval))
-			.addClaims(session.attributes)
-			.signWith(new SecretKeySpec(secretKey, CLIENT_SESSION_KEY_ALGORITHM))
+			.claims()
+				.id(session.id)
+				.expiration(new Date(session.lastAccessedTime() + session.maxInactiveInterval() * 1000))
+				.issuer("Nimbus")
+				.issuedAt(new Date(session.creationTime))
+				.add("maxInactiveInterval", Integer.toString(session.maxInactiveInterval))
+				.add(session.attributes)
+				.and()
+			.signWith(Keys.hmacShaKeyFor(secretKey))
 			.compact();
 
 		// Add cookie to response
@@ -193,11 +195,7 @@ public class JWTClientSession implements ClientSession {
 	}
 
 	public static final byte[] generateClientSessionSecretKey() {
-		try {
-			return KeyGenerator.getInstance(CLIENT_SESSION_KEY_ALGORITHM).generateKey().getEncoded();
-		} catch (NoSuchAlgorithmException ex) {
-			throw new RuntimeException("Expected algorithm is non supported", ex);
-		}
+		return CLIENT_SESSION_KEY_ALGORITHM.key().build().getEncoded();
 	}
 
 	public static void main(String[] args) {
