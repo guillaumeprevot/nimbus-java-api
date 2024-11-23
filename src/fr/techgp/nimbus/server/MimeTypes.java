@@ -92,8 +92,8 @@ public final class MimeTypes {
 
 	/** returns the MIME type of the "separator"-delimited path, for instance <code>MimeTypes.byPath("/path/to/file.html", '/')</code> */
 	public static final String byPath(String path, char separator) {
-		if (path == null || path.isBlank())
-			throw new InvalidParameterException("path is required");
+		if (path == null || path.isBlank() || path.endsWith("" + separator))
+			throw new InvalidParameterException("incorrect path");
 		int i = path.lastIndexOf(separator);
 		return byName(path.substring(i + 1));
 	}
@@ -103,6 +103,8 @@ public final class MimeTypes {
 		if (name == null || name.isBlank())
 			throw new InvalidParameterException("name is required");
 		int i = name.lastIndexOf('.');
+		if (i == -1 || i == name.length() - 1)
+			return defaultMimeType;
 		return byExtension(name.substring(i + 1));
 	}
 
