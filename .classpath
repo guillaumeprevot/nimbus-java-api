@@ -8,33 +8,28 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/asm-9.4.jar"/>
-	<classpathentry kind="lib" path="lib/asm-commons-9.4.jar"/>
-	<classpathentry kind="lib" path="lib/asm-tree-9.4.jar"/>
-	<classpathentry kind="lib" path="lib/freemarker-2.3.33.jar"/>
-	<classpathentry kind="lib" path="lib/gson-2.11.0.jar"/>
-	<classpathentry kind="lib" path="lib/jakarta.annotation-api-2.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/freemarker-2.3.34.jar"/>
+	<classpathentry kind="lib" path="lib/gson-2.12.1.jar"/>
 	<classpathentry kind="lib" path="lib/jakarta.servlet-api-5.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/jakarta.transaction-api-2.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-http-11.0.24.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-io-11.0.24.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-http-11.0.25.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-io-11.0.25.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-jakarta-servlet-api-5.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-security-11.0.24.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-server-11.0.24.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-servlet-11.0.24.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-util-11.0.24.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-webapp-11.0.24.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-xml-11.0.24.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-security-11.0.25.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-server-11.0.25.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-servlet-11.0.25.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-11.0.25.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-webapp-11.0.25.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-xml-11.0.25.jar"/>
 	<classpathentry kind="lib" path="lib/jjwt-api-0.12.6.jar"/>
 	<classpathentry kind="lib" path="lib/jjwt-gson-0.12.6.jar"/>
 	<classpathentry kind="lib" path="lib/jjwt-impl-0.12.6.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.36.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.36.jar"/>
-	<classpathentry kind="lib" path="lib/websocket-core-common-11.0.24.jar"/>
-	<classpathentry kind="lib" path="lib/websocket-core-server-11.0.24.jar"/>
+	<classpathentry kind="lib" path="lib/websocket-core-common-11.0.25.jar"/>
+	<classpathentry kind="lib" path="lib/websocket-core-server-11.0.25.jar"/>
 	<classpathentry kind="lib" path="lib/websocket-jetty-api-11.0.24.jar"/>
-	<classpathentry kind="lib" path="lib/websocket-jetty-common-11.0.24.jar"/>
-	<classpathentry kind="lib" path="lib/websocket-jetty-server-11.0.24.jar"/>
-	<classpathentry kind="lib" path="lib/websocket-servlet-11.0.24.jar"/>
+	<classpathentry kind="lib" path="lib/websocket-jetty-common-11.0.25.jar"/>
+	<classpathentry kind="lib" path="lib/websocket-jetty-server-11.0.25.jar"/>
+	<classpathentry kind="lib" path="lib/websocket-servlet-11.0.25.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
