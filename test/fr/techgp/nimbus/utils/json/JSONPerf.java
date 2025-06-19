@@ -2,6 +2,7 @@ package fr.techgp.nimbus.utils.json;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.List;
 import java.util.function.Function;
@@ -126,7 +127,7 @@ public final class JSONPerf {
 		(o) -> o.isNull() || o.isBoolean() || o.isString() || o.isString());
 
 	public static void execute() {
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(JSONPerf.class.getResourceAsStream("test.json"), "UTF-8"))) {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(JSONPerf.class.getResourceAsStream("test.json"), StandardCharsets.UTF_8))) {
 			List<String> strings = reader.lines().collect(Collectors.toList());
 			String jsonIn = strings.stream().reduce((content, line) -> content + '\n' + line).orElse("null");
 			JSONApi<?>[] apis = new JSONApi[] {

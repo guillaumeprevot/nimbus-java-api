@@ -106,7 +106,7 @@ public class JSONClientSession implements ClientSession {
 	}
 
 	@Override
-	public void attribute(String name, Object value) {
+	public JSONClientSession attribute(String name, Object value) {
 		if (value == null)
 			this.attributes.remove(name);
 		else if (value instanceof Boolean)
@@ -117,11 +117,13 @@ public class JSONClientSession implements ClientSession {
 			this.attributes.addProperty(name, (Number) value);
 		else
 			throw new UnsupportedOperationException("Unsupported attribute type " + value.getClass().getName() + " (only Boolean, String, Number are supported)");
+		return this;
 	}
 
 	@Override
-	public void removeAttribute(String name) {
+	public JSONClientSession removeAttribute(String name) {
 		this.attributes.remove(name);
+		return this;
 	}
 
 	@Override
@@ -130,8 +132,9 @@ public class JSONClientSession implements ClientSession {
 	}
 
 	@Override
-	public void maxInactiveInterval(int interval) {
+	public JSONClientSession maxInactiveInterval(int interval) {
 		this.maxInactiveInterval = interval;
+		return this;
 	}
 
 	@Override

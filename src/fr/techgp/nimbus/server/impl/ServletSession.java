@@ -47,13 +47,15 @@ public class ServletSession implements ServerSession {
 	}
 
 	@Override
-	public void attribute(String name, Object value) {
+	public ServletSession attribute(String name, Object value) {
 		this.session.setAttribute(name, value);
+		return this;
 	}
 
 	@Override
-	public void removeAttribute(String name) {
+	public ServletSession removeAttribute(String name) {
 		this.session.removeAttribute(name);
+		return this;
 	}
 
 	@Override
@@ -62,8 +64,9 @@ public class ServletSession implements ServerSession {
 	}
 
 	@Override
-	public void maxInactiveInterval(int interval) {
+	public ServletSession maxInactiveInterval(int interval) {
 		this.session.setMaxInactiveInterval(interval);
+		return this;
 	}
 
 	@Override

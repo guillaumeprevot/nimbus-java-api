@@ -77,16 +77,18 @@ public class JWTClientSession implements ClientSession {
 	}
 
 	@Override
-	public void attribute(String name, Object value) {
+	public JWTClientSession attribute(String name, Object value) {
 		if (value == null)
 			this.attributes.remove(name);
 		else
 			this.attributes.put(name, value);
+		return this;
 	}
 
 	@Override
-	public void removeAttribute(String name) {
+	public JWTClientSession removeAttribute(String name) {
 		this.attributes.remove(name);
+		return this;
 	}
 
 	@Override
@@ -95,8 +97,9 @@ public class JWTClientSession implements ClientSession {
 	}
 
 	@Override
-	public void maxInactiveInterval(int interval) {
+	public JWTClientSession maxInactiveInterval(int interval) {
 		this.maxInactiveInterval = interval;
+		return this;
 	}
 
 	@Override

@@ -1,23 +1,25 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>fr.techgp.nimbus</groupId>
 	<artifactId>nimbus-java-api</artifactId>
+	<version>1.17</version>
 	<packaging>jar</packaging>
-	<version>1.16</version>
 	<name>Nimbus Java API</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
+		<maven.compiler.release>21</maven.compiler.release>
 	</properties>
 
 	<dependencies>
 		<!--
 			Servlet API 5.0+ moved from "javax.servlet" to "jakarta.servlet"
 			https://github.com/jakartaee/servlet
-			https://search.maven.org/artifact/jakarta.servlet/jakarta.servlet-api
+			https://central.sonatype.com/artifact/jakarta.servlet/jakarta.servlet-api
 		-->
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
@@ -27,9 +29,9 @@
 
 		<!--
 			https://www.eclipse.org/jetty/
-			https://search.maven.org/artifact/org.eclipse.jetty/jetty-server
-			https://search.maven.org/artifact/org.eclipse.jetty.websocket/websocket-jetty-api
-			https://search.maven.org/artifact/org.eclipse.jetty.websocket/websocket-jetty-server
+			https://central.sonatype.com/artifact/org.eclipse.jetty/jetty-server
+			https://central.sonatype.com/artifact/org.eclipse.jetty.websocket/websocket-jetty-api
+			https://central.sonatype.com/artifact/org.eclipse.jetty.websocket/websocket-jetty-server
 		-->
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
@@ -49,7 +51,7 @@
 
 		<!--
 			https://freemarker.apache.org/
-			https://search.maven.org/artifact/org.freemarker/freemarker
+			https://central.sonatype.com/artifact/org.freemarker/freemarker
 		-->
 		<dependency>
 			<groupId>org.freemarker</groupId>
@@ -59,36 +61,35 @@
 
 		<!--
 			https://github.com/google/gson
-			https://search.maven.org/artifact/com.google.code.gson/gson
+			https://central.sonatype.com/artifact/com.google.code.gson/gson
 		-->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.12.1</version>
+			<version>2.13.1</version>
 		</dependency>
 
 		<!--
 			http://www.slf4j.org/api/org/slf4j/impl/SimpleLogger.html
-			https://search.maven.org/artifact/org.slf4j/slf4j-api
-			https://search.maven.org/artifact/org.slf4j/slf4j-simple
+			https://central.sonatype.com/artifact/org.slf4j/slf4j-api
+			https://central.sonatype.com/artifact/org.slf4j/slf4j-simple
 		-->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.36</version>
+			<version>2.0.17</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.36</version>
-			<optional>true</optional>
+			<version>2.0.17</version>
 		</dependency>
 
 		<!--
 			https://github.com/jwtk/jjwt#install-jdk-maven
-			https://search.maven.org/artifact/io.jsonwebtoken/jjwt-api
-			https://search.maven.org/artifact/io.jsonwebtoken/jjwt-impl
-			https://search.maven.org/artifact/io.jsonwebtoken/jjwt-gson
+			https://central.sonatype.com/artifact/io.jsonwebtoken/jjwt-api
+			https://central.sonatype.com/artifact/io.jsonwebtoken/jjwt-impl
+			https://central.sonatype.com/artifact/io.jsonwebtoken/jjwt-gson
 		-->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

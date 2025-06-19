@@ -92,6 +92,11 @@ public interface Render {
 	}
 
 	/** returns a new {@link Render} that will write this file, with proper caching using the "Etag" and "Last-Modified" headers */
+	public static Render staticFile(File file) {
+		return new RenderStatic(file, MimeTypes.byName(file.getName()));
+	}
+
+	/** returns a new {@link Render} that will write this file, with proper caching using the "Etag" and "Last-Modified" headers */
 	public static Render staticFile(File file, String mimeType) {
 		return new RenderStatic(file, mimeType);
 	}
@@ -114,6 +119,11 @@ public interface Render {
 	/** returns a new {@link Render} that will send the specified status code, and optional "body" {@link String} */
 	public static Render status(int code, String body) {
 		return new RenderStatus(code, body);
+	}
+
+	/** wrapper for the 200 response with "OK" body */
+	public static Render ok() {
+		return new RenderStatus(HttpServletResponse.SC_OK, "OK"); // 200
 	}
 
 	/** wrapper for the 304 response with no body */

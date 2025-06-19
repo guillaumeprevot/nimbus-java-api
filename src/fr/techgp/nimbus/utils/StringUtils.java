@@ -27,7 +27,7 @@ public final class StringUtils {
 	 * @return true si la chaine est vide
 	 */
 	public static final boolean isBlank(String s) {
-		return s == null || s.trim().length() == 0;
+		return s == null || s.isBlank();
 	}
 
 	/**
@@ -37,7 +37,7 @@ public final class StringUtils {
 	 * @return true si la chaine n'est pas vide
 	 */
 	public static final boolean isNotBlank(String s) {
-		return !isBlank(s);
+		return s != null && !s.isBlank();
 	}
 
 	/**

@@ -18,16 +18,16 @@ public interface Session {
 	public <T> T attribute(String name);
 
 	/** binds an object to this session, using the specified name */
-	public void attribute(String name, Object value);
+	public Session attribute(String name, Object value);
 
 	/** removes the object bound with the specified name from this session */
-	public void removeAttribute(String name);
+	public Session removeAttribute(String name);
 
 	/** returns the maximum time interval, in seconds, that the servlet container will keep this session open between client accesses */
 	public int maxInactiveInterval();
 
 	/** specifies the time, in seconds, between client requests before the servlet container will invalidate this session */
-	public void maxInactiveInterval(int interval);
+	public Session maxInactiveInterval(int interval);
 
 	/** invalidates this session then unbinds any objects bound to it */
 	public void invalidate();

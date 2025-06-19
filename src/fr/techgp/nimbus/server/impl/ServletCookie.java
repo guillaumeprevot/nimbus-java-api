@@ -33,8 +33,9 @@ public class ServletCookie implements Cookie {
 	}
 
 	@Override
-	public void path(String path) {
+	public ServletCookie path(String path) {
 		this.cookie.setPath(Objects.requireNonNull(path));
+		return this;
 	}
 
 	@Override
@@ -43,8 +44,9 @@ public class ServletCookie implements Cookie {
 	}
 
 	@Override
-	public void value(String value) {
+	public ServletCookie value(String value) {
 		this.cookie.setValue(Objects.requireNonNull(value));
+		return this;
 	}
 
 	@Override
@@ -53,8 +55,9 @@ public class ServletCookie implements Cookie {
 	}
 
 	@Override
-	public void domain(String domain) {
+	public ServletCookie domain(String domain) {
 		this.cookie.setDomain(Objects.requireNonNull(domain));
+		return this;
 	}
 
 	@Override
@@ -63,8 +66,9 @@ public class ServletCookie implements Cookie {
 	}
 
 	@Override
-	public void maxAge(int maxAge) {
+	public ServletCookie maxAge(int maxAge) {
 		this.cookie.setMaxAge(maxAge);
+		return this;
 	}
 
 	@Override
@@ -73,8 +77,9 @@ public class ServletCookie implements Cookie {
 	}
 
 	@Override
-	public void secure(boolean secure) {
+	public ServletCookie secure(boolean secure) {
 		this.cookie.setSecure(secure);
+		return this;
 	}
 
 	@Override
@@ -83,8 +88,9 @@ public class ServletCookie implements Cookie {
 	}
 
 	@Override
-	public void httpOnly(boolean httpOnly) {
+	public ServletCookie httpOnly(boolean httpOnly) {
 		this.cookie.setHttpOnly(httpOnly);
+		return this;
 	}
 
 	@Override

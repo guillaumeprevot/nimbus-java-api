@@ -182,7 +182,7 @@ public final class GraphicsUtils {
 
 	/**
 	 * Cette méthode redimensionne l'image "source" aux dimensions données, quitte à déformer l'image,
-	 * mais en essayant de préserver la qualitérâce à un algo trouvé sur Internet (imgscalr-java-image-scaling-library).
+	 * mais en essayant de préserver la qualité grâce à un algo trouvé sur Internet (imgscalr-java-image-scaling-library).
 	 */
 	public static final BufferedImage scaleImage(BufferedImage source, int targetWidth, int targetHeight, boolean superQuality) {
 		int currentWidth = source.getWidth();

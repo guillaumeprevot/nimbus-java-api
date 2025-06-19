@@ -24,8 +24,9 @@ public class ServletResponse implements Response {
 	}
 
 	@Override
-	public void status(int status) {
+	public ServletResponse status(int status) {
 		this.response.setStatus(status);
+		return this;
 	}
 
 	@Override
@@ -34,8 +35,9 @@ public class ServletResponse implements Response {
 	}
 
 	@Override
-	public void type(String contentType) {
+	public ServletResponse type(String contentType) {
 		this.response.setContentType(contentType);
+		return this;
 	}
 
 	@Override
@@ -44,8 +46,9 @@ public class ServletResponse implements Response {
 	}
 
 	@Override
-	public void body(Render body) {
+	public ServletResponse body(Render body) {
 		this.body = body;
+		return this;
 	}
 
 	@Override
@@ -54,47 +57,55 @@ public class ServletResponse implements Response {
 	}
 
 	@Override
-	public void header(String name, String value) {
+	public ServletResponse header(String name, String value) {
 		this.response.setHeader(name, value);
+		return this;
 	}
 
 	@Override
-	public void addHeader(String name, String value) {
+	public ServletResponse addHeader(String name, String value) {
 		this.response.addHeader(name, value);
+		return this;
 	}
 
 	@Override
-	public void intHeader(String name, int value) {
+	public ServletResponse intHeader(String name, int value) {
 		this.response.setIntHeader(name, value);
+		return this;
 	}
 
 	@Override
-	public void addIntHeader(String name, int value) {
+	public ServletResponse addIntHeader(String name, int value) {
 		this.response.addIntHeader(name, value);
+		return this;
 	}
 
 	@Override
-	public void dateHeader(String name, long value) {
+	public ServletResponse dateHeader(String name, long value) {
 		this.response.setDateHeader(name, value);
+		return this;
 	}
 
 	@Override
-	public void addDateHeader(String name, long value) {
+	public ServletResponse addDateHeader(String name, long value) {
 		this.response.addDateHeader(name, value);
+		return this;
 	}
 
 	@Override
-	public void length(long length) {
+	public ServletResponse length(long length) {
 		this.response.setContentLengthLong(length);
+		return this;
 	}
 
 	@Override
-	public void cookie(String name, String value) {
+	public ServletResponse cookie(String name, String value) {
 		cookie(name, "/", value, "", -1, true, true);
+		return this;
 	}
 
 	@Override
-	public void cookie(String name, String path, String value, String domain, int maxAge, boolean secure, boolean httpOnly) {
+	public ServletResponse cookie(String name, String path, String value, String domain, int maxAge, boolean secure, boolean httpOnly) {
 		ServletCookie cookie = new ServletCookie(name, value);
 		if (path != null)
 			cookie.path(path);
@@ -104,11 +115,13 @@ public class ServletResponse implements Response {
 		cookie.secure(secure);
 		cookie.httpOnly(httpOnly);
 		this.response.addCookie(cookie.raw());
+		return this;
 	}
 
 	@Override
-	public void removeCookie(String name) {
+	public ServletResponse removeCookie(String name) {
 		cookie(name, "", "", null, 0, true, true);
+		return this;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package fr.techgp.nimbus.utils.json;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -76,7 +77,7 @@ public class JSONTest {
 	}
 
 	public void testMoreComplexContent() {
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(JSONTest.class.getResourceAsStream("test.json"), "UTF-8"))) {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(JSONTest.class.getResourceAsStream("test.json"), StandardCharsets.UTF_8))) {
 			List<String> strings = reader.lines().collect(Collectors.toList());
 			String jsonIn = strings.stream().reduce((content, line) -> content + '\n' + line).orElse("null");
 			JSONElement element = JSON.decode(jsonIn);
