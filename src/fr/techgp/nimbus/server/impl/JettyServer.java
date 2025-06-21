@@ -102,7 +102,6 @@ public class JettyServer {
 	}
 
 	/** This method creates a Jetty {@link Server} using specified handler and port and optional keystore */
-	@SuppressWarnings("resource")
 	protected static final Server createAndStartServer(Router router, int port, String keystore, String keystorePassword, Consumer<Request> invalidSNIHandler,
 			MultipartConfigElement multipart, SessionConfig session, boolean showStackTraces) throws Exception {
 		// Create server

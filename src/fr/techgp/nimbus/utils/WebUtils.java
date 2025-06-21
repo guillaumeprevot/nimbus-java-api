@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -32,11 +33,12 @@ public final class WebUtils {
 	 * @param url l'URL à ouvrir
 	 * @return la {@link HttpURLConnection} pointant sur l'URL demandée
 	 * @throws IOException
+	 * @throws URISyntaxException 
 	 */
-	public static final HttpURLConnection openURL(final String url) throws IOException {
-		HttpURLConnection.setFollowRedirects(true);
-		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+	public static final HttpURLConnection openURL(final String url) throws IOException, URISyntaxException {
+		HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
 		connection.addRequestProperty("User-Agent", "Nimbus");
+		connection.setInstanceFollowRedirects(true);
 		connection.setRequestMethod("GET");
 		connection.connect();
 		return connection;
@@ -54,7 +56,7 @@ public final class WebUtils {
 			try (InputStream stream = connection.getInputStream()) {
 				return IOUtils.toUTF8String(stream);
 			}
-		} catch (IOException ex) {
+		} catch (IOException | URISyntaxException ex) {
 			return null;
 		}
 	}
@@ -76,7 +78,7 @@ public final class WebUtils {
 					mimetype = defaultMimetype;
 				return "data:" + mimetype + ";base64," + java.util.Base64.getEncoder().encodeToString(bytes);
 			}
-		} catch (IOException ex) {
+		} catch (IOException | URISyntaxException ex) {
 			return null;
 		}
 	}

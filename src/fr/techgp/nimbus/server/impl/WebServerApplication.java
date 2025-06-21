@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -292,19 +295,20 @@ public class WebServerApplication {
 
 	private static final class IBlockList implements Route {
 
-		private final List<String> urls;
+		private final List<URL> urls;
 		private final File file;
 		private final long refreshInterval;
 		private long refreshTime = 0;
 
-		public IBlockList(BiFunction<String, String, String> settings) {
+		public IBlockList(BiFunction<String, String, String> settings) throws MalformedURLException, URISyntaxException {
 			super();
 			this.urls = new ArrayList<>();
 			this.file = new File(settings.apply("utils.iblocklist.file", "iblocklist.txt.gz"));
 			this.refreshInterval = Integer.parseInt(settings.apply("utils.iblocklist.interval", "1")) * 24 * 60 * 60 * 1000;
 			int index = 0;
 			while (settings.apply("utils.iblocklist." + index, null) != null) {
-				this.urls.add(settings.apply("utils.iblocklist." + index, null));
+				String url = settings.apply("utils.iblocklist." + index, null);
+				this.urls.add(new URI(url).toURL());
 				index++;
 			}
 		}
@@ -318,10 +322,10 @@ public class WebServerApplication {
 						logger.info("[iblocklist] Refreshing " + this.file.getAbsolutePath() + "...");
 					this.file.delete();
 					try (OutputStream os = new GZIPOutputStream(new FileOutputStream(this.file, false))) {
-						for (String url : this.urls) {
+						for (URL url : this.urls) {
 							if (logger.isInfoEnabled())
 								logger.info("[iblocklist] Adding " + url + "...");
-							try (InputStream is = new GZIPInputStream(new URL(url).openStream())) {
+							try (InputStream is = new GZIPInputStream(url.openStream())) {
 								IOUtils.copy(is, os);
 							}
 						}

@@ -1,11 +1,11 @@
-/bin/*
-/files/iblocklist.txt.gz
+/bin/
+/lib/*.jar
+/target/
+/webserver/iblocklist.txt.gz
 /webserver/webserver.log
 /webserver/webserver.pid
 /webserver/webserver-dev.conf
 /webserver/webserver-dev.pkcs12
 /webserver/webserver-dev.url
-/lib/*.jar
-/target/
+/pom.bat
 /pom.tree.txt
-/bin/
