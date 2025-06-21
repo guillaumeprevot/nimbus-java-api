@@ -1,0 +1,20 @@
+{
+	"configurations": [
+        {
+            "type": "java",
+            "name": "Webserver (dev)",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "mainClass": "fr.techgp.nimbus.server.impl.WebServerApplication",
+			"cwd": "${workspaceFolder}/webserver",
+            "vmArgs": "-Dwebserver.conf=webserver-dev.conf -Dwebserver.log=none -Dwebserver.pid_=webserver.pid"
+        },
+        {
+            "type": "java",
+            "name": "Routing API (test)",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "mainClass": "fr.techgp.nimbus.server.test.Test"
+        },
+	]
+}

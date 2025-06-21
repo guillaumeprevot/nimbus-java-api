@@ -2,6 +2,7 @@ package fr.techgp.nimbus.server.test;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -61,8 +62,9 @@ public class Test {
 	public Test cookie(boolean send, boolean save) { this.sendCookie = send; this.saveCookie = save; return this; }
 
 	public void run() throws Exception {
-		HttpURLConnection.setFollowRedirects(true);
-		HttpURLConnection connection = (HttpURLConnection) new URL("http", "localhost", PORT, this.request).openConnection();
+		URL url = new URI("http://localhost:" + PORT + this.request).toURL();
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setInstanceFollowRedirects(true);
 		if (this.sendCookie)
 			connection.setRequestProperty("Cookie", Test.cookieLine);
 		connection.setRequestMethod(this.method);
@@ -194,6 +196,7 @@ public class Test {
 			JettyServer s = new JettyServer(PORT);
 			s.multipart(null/* or System.getProperty("java.io.tmpdir")*/, Integer.MAX_VALUE, Long.MAX_VALUE, 10);
 			s.session(2, null, null, "ce26b4bb1dc61766fbe866eb5550ab81cc8f48e81dd9a73b98cacb2c66c3e3c0");
+			s.errors(true);
 			s.start(r);
 
 			try {
