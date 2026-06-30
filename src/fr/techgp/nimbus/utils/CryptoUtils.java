@@ -7,7 +7,6 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -58,9 +57,9 @@ public final class CryptoUtils {
 		// On vérifie si le mot de passe contient au moins un caractère dans chaque ensemble suivant
 		boolean hasDigit = false;
 		boolean hasLowerHex = false;
+		boolean hasLowerLetter = false;
 		boolean hasUpperHex = false;
-		boolean hasLowerOther = false;
-		boolean hasUpperOther = false;
+		boolean hasUpperLetter = false;
 		boolean hasAscii = false;
 		int otherCount = 0;
 		// On compte le nombre de répétition pour diminuer sensiblement la "longueur" du mot de passe
@@ -71,22 +70,25 @@ public final class CryptoUtils {
 				repeatCount++; // on compte la répétition
 				continue; // on le traitera à sa dernière apparition
 			}
-			boolean isDigit = (c >= '0' && c <= '9');
-			boolean isLower =  (c >= 'a' && c <= 'z');
-			boolean isUpper = (c >= 'A' && c <= 'Z');
-			boolean isAscii = (ascii.indexOf(c) >= 0);
-			hasDigit = hasDigit || isDigit;
-			hasLowerHex = hasLowerHex || (isLower && c <= 'f');
-			hasUpperHex = hasUpperHex || (isUpper && c <= 'F');
-			hasLowerOther = hasLowerOther || (isLower && c >= 'g');
-			hasUpperOther = hasUpperOther || (isUpper && c >= 'G');
-			hasAscii = hasAscii || isAscii;
-			otherCount += (isDigit || isLower || isUpper || isAscii) ? 0 : 1;
+			if (c >= '0' && c <= '9')
+				hasDigit = true;
+			else if (c >= 'a' && c <= 'f')
+				hasLowerHex = true;
+			else if (c >= 'g' && c <= 'z')
+				hasLowerLetter = true;
+			else if (c >= 'A' && c <= 'F')
+				hasUpperHex = true;
+			else if (c >= 'G' && c <= 'Z')
+				hasUpperLetter = true;
+			else if (ascii.indexOf(c) >= 0)
+				hasAscii = true;
+			else 
+				otherCount++;
 		}
 		// Calculer le nombre de caractères de l'ensemble auquel appartient ce mot de passe
 		int size = hasDigit ? 10 : 0;
-		size += hasLowerOther ? 26 : hasLowerHex ? 6 : 0;
-		size += hasUpperOther ? 26 : hasUpperHex ? 6 : 0;
+		size += hasLowerLetter ? 26 : hasLowerHex ? 6 : 0;
+		size += hasUpperLetter ? 26 : hasUpperHex ? 6 : 0;
 		size += hasAscii ? ascii.length() : 0;
 		size += otherCount;
 		// Calculer l'entropie obtenu par un mot de passe de cette longueur et cet ensemble (basé sur une formule Wikipédia)
@@ -172,7 +174,7 @@ public final class CryptoUtils {
 	 * @param errorHandler un gestionnaire pour des erreurs inattendues (normalement, aucune ne devrait être lancée)
 	 * @return true si testedPassword est le bon mot de passe
 	 */
-	public static final boolean validatePassword(final String testedPassword, final String storedPassword, final String algorithm, Consumer<Exception> errorHandler) {
+	public static final boolean validatePassword(final String testedPassword, final String storedPassword, final String algorithm) {
 		try {
 			// Extraire les informations depuis le hash donnée, de la forme "iterations:saltHex:hashHex"
 			String[] parts = storedPassword.split(":");
@@ -188,13 +190,9 @@ public final class CryptoUtils {
 
 			// Comparer les 2 hash en temps constant
 			return slowEquals(hash, testedHash);
-		} catch (Exception ex) {
-			if (errorHandler != null)
-				// Prévenir de l'erreur
-				errorHandler.accept(ex);
-			else
-				// Ou tracer l'erreur
-				System.err.println(ex.getClass().getName() + " : " + ex.getMessage());
+		} catch (NumberFormatException | NoSuchAlgorithmException | InvalidKeySpecException ex) {
+			// Tracer l'erreur
+			System.err.println(ex.getClass().getName() + " : " + ex.getMessage());
 			// Rejeter les mots de passe en attendant d'en savoir plus
 			return false;
 		}
@@ -208,7 +206,7 @@ public final class CryptoUtils {
 	 * @param a2 le second tableau
 	 * @return true si les 2 tableaux sont identiques
 	 */
-	private static final boolean slowEquals(final byte[] a1, final byte[] a2) {
+	public static final boolean slowEquals(final byte[] a1, final byte[] a2) {
 		int diff = a1.length ^ a2.length;
 		for (int i = 0; i < a1.length && i < a2.length; i++)
 			diff |= a1[i] ^ a2[i];
